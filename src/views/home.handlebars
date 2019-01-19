@@ -1,0 +1,72 @@
+<div class="workout">
+    <h1>Here is your workout for today!</h1>
+    <form class="workoutForm" id="form1" method="post" action="/">
+        <span>Name:
+          <input type="text" name="name" id="name">
+        </span>
+        <span>Reps:
+          <input type="text" name="reps" id="reps">
+        </span>
+        <span>Weight:
+          <input type="text" name="weight" id="weight">
+        </span>
+        <span>Date:
+          <input type="text" name="date" id="date">
+        </span>
+        <span>Lbs:
+          <input type="radio" name="lbs" id="radio_lbs" value="1">
+        </span>
+        <span>Kg:
+          <input type="radio" name="lbs" id="radio_kg" value="0">
+        </span>
+        <input type="submit" value="Add Item">
+    </form>
+    {{#if data}}
+    <table id="workout_table">
+        <tr>
+            <th>Name</th>
+            <th>Reps</th>
+            <th>Weight</th>
+            <th>Date</th>
+            <th>Weight Units (Lbs/Kg)</th>
+            <th>Options</th>
+        </tr>
+        {{#each data}}
+        <tr>
+            <input type="hidden" id="workout-id-{{this.id}}" value="{{this.id}}">
+            <td class="workout_td" id="workout-name-{{this.id}}">
+                <span class="show" id="workout1-name-{{this.id}}">{{this.name}}</span>
+                <input class="hidden" type="text" value="{{this.name}}" id="workout2-name-{{this.id}}">
+            </td>
+            <td class="workout_td" id="workout-reps-{{this.id}}">
+                <span class="show" id="workout1-reps-{{this.id}}">{{this.reps}}</span>
+                <input class="hidden" type="text" value="{{this.reps}}" id="workout2-reps-{{this.id}}">
+            </td>
+            <td class="workout_td" id="workout-weight-{{this.id}}">
+                <span class="show" id="workout1-weight-{{this.id}}">{{this.weight}}</span>
+                <input class="hidden" type="text" value="{{this.weight}}" id="workout2-weight-{{this.id}}">
+            </td>
+            <td class="workout_td" id="workout-date-{{this.id}}">
+                <span class="show" id="workout1-date-{{this.id}}">{{this.date}}</span>
+                <input class="hidden" type="text" value="{{this.date}}" id="workout2-date-{{this.id}}">
+            </td>
+            <td class="workout_td" id="workout-lbs-{{this.id}}">
+                <span class="show" id="workout1-lbs-{{this.id}}">
+                    {{#if this.lbs}}
+                        Lbs
+                    {{else}}
+                        Kg
+                    {{/if}}
+                </span>
+                <input class="hidden" type="text" value="{{this.lbs}}" id="workout2-lbs-{{this.id}}">
+            </td>
+            <td class="td_button">
+                <button type="button" id="edit-{{this.id}}" action="/" onclick="editRow(this, {{this.id}})" class="show">Edit</button>
+                <button type="button" id="save-{{this.id}}" action="/" onclick="saveRow(this, {{this.id}})" class="hidden">Save Changes</button>
+                <button type="button" id="delete-{{this.id}}" action="/" onclick="deleteRow(this, {{this.id}})">Delete</button>
+            </td>
+        </tr>
+        {{/each}}
+    </table>
+    {{/if}}
+    </div>

@@ -1,0 +1,106 @@
+/******************************************************************************
+* Author:     Edmund Dea
+* Student Id: 933280343
+* Date:       3/14/17
+* Class:      CS290
+* Title:      Week 9 - HW Assignment: Database and Interactions
+* Filename:   style.css
+******************************************************************************/
+
+body
+{
+    background: url("../runner.jpg") no-repeat center center fixed;
+    background-size: 100%;
+    font-family: "Mina", "Ubuntu", "Muli", "Work+Sans", sans-serif;
+}
+
+.workout
+{
+    margin: 20px;
+}
+
+.workoutForm
+{
+    border: 0;
+    background-color: #fff;
+    padding: 10px;
+    color: #1A5276;
+    font-weight: bold;
+    width: 59vw;
+    text-align: center;
+
+    /* Reference:
+     * Not all browsers behave the same for opacity.
+     * https://stackoverflow.com/questions/11807286/how-to-make-div-background-color-transparent-in-css
+     */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; /* IE 8 */
+    filter: alpha(opacity=80); /* IE 5-7 */
+    -moz-opacity: 0.80; /* Netscape */
+    -khtml-opacity: 0.80; /* Safari 1.x */
+    opacity: 0.80; /* Good browsers */
+}
+
+table
+{
+    border: 0;
+    background-color: #fff;
+    border-collapse: collapse;
+    padding: 0;
+    margin-top: 20px;
+    color: #1A5276;
+    text-align: center;
+    /*width: 60vw;*/
+
+    /* Reference:
+     * Not all browsers behave the same for opacity.
+     * https://stackoverflow.com/questions/11807286/how-to-make-div-background-color-transparent-in-css
+     */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; /* IE 8 */
+    filter: alpha(opacity=80); /* IE 5-7 */
+    -moz-opacity: 0.80; /* Netscape */
+    -khtml-opacity: 0.80; /* Safari 1.x */
+    opacity: 0.80; /* Good browsers */
+}
+
+table tr th
+{
+    background-color: #2a6592;
+    color: #fff;
+    padding: 10px;
+    border: 1px solid #cccccc;
+
+}
+
+table tr td
+{
+    border: 1px solid #cccccc;
+    padding: 5px;
+    margin: 0;
+    
+}
+
+.workout_td
+{
+    width: 10vw;
+}
+
+button
+{
+    margin: 2px;
+    padding: 2px 5px 2px 5px;
+    background: #F5B041;
+    box-shadow: none;
+    border: 0;
+    border-radius: 5px;
+    -webkit-appearance: none;
+}
+
+.hidden
+{
+    display: none;
+}
+
+.show
+{
+    display: inline;
+}
