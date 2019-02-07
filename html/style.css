@@ -1,0 +1,38 @@
+.account-form-col {
+    border: 1px solid black;
+    width: 85%;
+    margin: auto;
+    margin-top: 15px;
+}
+.account-form-col input {
+    margin: 5px;
+}
+
+.account-form-col button {
+    margin: 10px;
+}
+
+.navbar {
+    border-bottom: 2px solid black;
+    background: #4e8;
+    color: black;
+}
+
+.navbar-brand {
+    border-right: 1px solid black;
+    padding-right: 15px;
+}
+
+.stocks-col {
+    border-left: 1px solid black;
+}
+
+.scroll {
+    overflow-y:scroll;
+    height: 200px;
+}
+
+.stock-table {
+    width: 95%;
+    margin: auto;
+}
