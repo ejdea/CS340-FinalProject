@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_alt.css">
 </head>
 <body>
     
@@ -33,16 +33,63 @@
     </nav>
     
     <div class="container-fluid">  
-        <div class="row">
+        <div class="row" id="main-row">
             
-            <div class="col-md-8 charts-col">
-                <div class="row justify-content-center align-items-center">
-                    <h3>Charts go here</h3>
-                </div>
+            <div class="col-md-7 home-col">
+                    <div class="row justify-content-center align-items-center">
+                        <h5 id="watchlist-header" class="text-center">Portfolio</h5>
+                    </div>
+                    
+                    <div class="row justify-content-center align-items-center">
+                        <form action="#" method="POST">
+                            <label for="new-order-symbol">Sym:</label>
+                            <input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="symbol" maxlength="5" size="6" required>
+                            <label for="new-order-quantity"># Shares:</label>    
+                            <input type="number" name="new-order-quantity" id="new-order-quantity" placeholder="quant." min="1" required>
+                            <label for="new-order-type">Order Type</label>
+                            <select name="new-order-type" id="new-order-type">
+                                <option value="">type 1</option>
+                                <option value="">type 2</option>
+                                <option value="">type 3</option>
+                                <option value="">type 4</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
+                        
+                        </form>
+                    </div>
+                    
+                    
+                    <div class="row scroll" id="portfolio-scroll">
+                        <table class="stock-table" id="portfolio-table">
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Company</th>
+                                <th># Shares</th>
+                                <th>Purchase Date</th> 
+                                <th>Purchase Price</th>
+                                <th>Current Price</th>
+                                <th>Order Type</th>
+                                
+                            </tr>
+                            <tr>
+                                <td> 
+                                    <a href="stock-detail.html">ABC</a>
+                                </td>
+                                <td>Abc Corp</td>
+                                <td>100</td>
+                                <td>2/7/19</td>
+                                <td>9.34</td>
+                                <td>10.78</td>
+                                <td>Market Order</td>
+                            </tr>
+                            
+                        </table>
+                        
+                    </div>
+                
             </div>
             
-            <div class="col-md-4 stocks-col">
-                <div class="watch-list">
+            <div class="col-md-5 home-col" id="watchlist-col">
                     <div class="row justify-content-center align-items-center">
                         <h5 id="watchlist-header">Watchlist</h5>
                     </div>
@@ -70,195 +117,93 @@
                                 <td>10.78</td>
                                 <td>+5%</td>
                                 <td>
-                                    <form action="login.html" method="POST">
-                                    
-                                    <input type="hidden" name="" id="">
-                                    <button type="submit" class="close" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-
-                                </form>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="portfolio">
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-6">
-                        <h5 id="watchlist-header" class="text-center">Portfolio</h5>
+                                    <form action="#" method="POST">
+                                        
+                                        <input type="hidden" name="" id="" class="watchlist-delete-btn">
+                                        <button type="submit" class="close" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                        
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                            <tr>
+                                <td>ABC</td>
+                                <td>Abc Corp</td>
+                                <td>10.78</td>
+                                <td>+5%</td>
+                            </tr>
+                        </table>
                     </div>
-                    
-                    <div class="col-6">
-                        <form action="#" method="GET">
-                            <button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
-                        </form>
-                    </div>
-                </div>
                 
-                <div class="row scroll align-items-center justify-content-center" id="portfolio-scroll">
-                    <table class="stock-table" id="watchlist-table">
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Company</th>
-                            <th># Shares</th>
-                            <th>Purchase Date</th> 
-                            <th>Purchase Price</th>
-                            <th>Current Price</th>
-                            <th>Order Type</th>
-                            
-                        </tr>
-                        <tr>
-                            <td> 
-                                <a href="stock-detail.html">ABC</a>
-                            </td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                        <tr>
-                            <td>ABC</td>
-                            <td>Abc Corp</td>
-                            <td>10.78</td>
-                            <td>+5%</td>
-                        </tr>
-                    </table>
-                    
-                </div>
+                
+                
+                
             </div>
-            
         </div>
+        
     </div>
     
-</div>
-
 </div>
 
 <!-- Navbar scripts -->

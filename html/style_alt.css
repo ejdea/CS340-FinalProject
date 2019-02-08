@@ -1,3 +1,4 @@
+/* LOGIN PAGE STYLES */
 .account-form-col {
     border: 1px solid black;
     width: 85%;
@@ -11,7 +12,11 @@
 .account-form-col button {
     margin: 10px;
 }
+/* *************************** */
 
+
+
+/* NAVBAR */
 .navbar {
     border-bottom: 2px solid black;
     background: #4e8;
@@ -22,22 +27,27 @@
     border-right: 1px solid black;
     padding-right: 15px;
 }
+/* *************************** */
 
-.stocks-col {
-    border-left: 1px solid black;
-}
+
+
+
+/* ************************** */
+/* HOME PAGE STYLES */
+
+/* table and scroll */
 
 .scroll {
     overflow-y: scroll;
-    height: 250px;
+    height: 350px;
     border: 1px solid black;
     padding: 2px;
     margin: 2px
-    overflow-x: scroll;
+    
 }
 
 .stock-table {
-    margin: auto;
+    margin: 0px auto;
     width: 100%;
 
 }
@@ -47,16 +57,34 @@
     
 }
 
-
-table, tr {
+table, tr, th, td {
     border: 1px solid black;
     border-collapse: collapse;
     font-size: .8rem;
     text-align: center;
 }
 
-.watch-list {
+th, td {
+    padding: 3px;
+}
+
+
+/* watchlist */
+#watchlist-col {
+    border-left: 1px solid black;
+}
+
+.watchlist {
     border-bottom: 1 px solid black;
     padding-bottom: 5px;
     width:100%
 }
+
+/* portfolio */
+
+
+/* forms */
+input[type=number] {
+    width: 60px;
+}
+/* **************************** */
