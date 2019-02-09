@@ -6,10 +6,24 @@
 -- Date:		2/9/2019
 -- ------------------------------------------------------
 
--- Get user during login process
-SELECT user, password
-FROM login l
-WHERE l.username = :username_input
+-- Check whether user login is successful. If LOGIN_STATUS=0, login failed. If LOGIN_STATUS=1, login is successful.
+SELECT COUNT(id) AS LOGIN_STATUS
+FROM fp_user u 
+WHERE u.username = :username_input
+AND u.password = :password_input
+
+-- Create new user
+INSERT INTO fp_user (`username`, `password`) VALUES ( :username_input, :password_input )
+
+
+
+
+
+
+
+
+
+
 
 
 

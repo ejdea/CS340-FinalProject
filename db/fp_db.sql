@@ -1,9 +1,6 @@
 -- MySQL dump 10.16  Distrib 10.1.36-MariaDB, for Linux (x86_64)
 --
--- Host:		classmysql.engr.oregonstate.edu
--- Database:	cs340_deae
--- Authors:		Edmund Dea, Sam Judkis
--- Date:		2/9/2019
+-- Host: classmysql.engr.oregonstate.edu    Database: cs340_deae
 -- ------------------------------------------------------
 -- Server version	10.1.22-MariaDB
 
@@ -55,17 +52,16 @@ CREATE TABLE `fp_order` (
   `stock_id` int(11) NOT NULL,
   `portfolio_id` int(11) NOT NULL,
   `order_type_id` int(11) NOT NULL,
-  `price_id` int(11) NOT NULL,
+  `price` decimal(12,6) NOT NULL,
   `quantity` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `stock_id` (`stock_id`),
   KEY `portfolio_id` (`portfolio_id`),
-  KEY `price_id` (`price_id`),
+  KEY `price_id` (`price`),
   KEY `order_type_id` (`order_type_id`),
   CONSTRAINT `order_type_id` FOREIGN KEY (`order_type_id`) REFERENCES `fp_order_type` (`id`),
-  CONSTRAINT `portfolio_id` FOREIGN KEY (`portfolio_id`) REFERENCES `fp_portfolio` (`id`),
-  CONSTRAINT `price_id` FOREIGN KEY (`price_id`) REFERENCES `fp_price` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+  CONSTRAINT `portfolio_id` FOREIGN KEY (`portfolio_id`) REFERENCES `fp_portfolio` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,7 +70,7 @@ CREATE TABLE `fp_order` (
 
 LOCK TABLES `fp_order` WRITE;
 /*!40000 ALTER TABLE `fp_order` DISABLE KEYS */;
-INSERT INTO `fp_order` VALUES (1,1,1,1,13661,50);
+INSERT INTO `fp_order` VALUES (2,1,1,1,271.959991,100);
 /*!40000 ALTER TABLE `fp_order` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -173,6 +169,7 @@ CREATE TABLE `fp_stock` (
   `sector_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `Id` (`symbol`),
+  KEY `industry_id` (`sector_id`),
   CONSTRAINT `industry_id` FOREIGN KEY (`sector_id`) REFERENCES `fp_sector` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -200,7 +197,7 @@ CREATE TABLE `fp_user` (
   `password` char(128) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `Id` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -247,4 +244,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-09 10:44:32
+-- Dump completed on 2019-02-09 12:29:28
