@@ -36,167 +36,124 @@
         <div class="row" id="main-row">
             
             <div class="col-md-7 home-col">
-                    <div class="row justify-content-center align-items-center">
-                        <h5 id="watchlist-header" class="text-center">Portfolio</h5>
-                    </div>
-                    
-                    <div class="row justify-content-center align-items-center">
-                        <form action="#" method="POST">
-                            <label for="new-order-symbol">Sym:</label>
-                            <input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="symbol" maxlength="5" size="6" required>
-                            <label for="new-order-quantity"># Shares:</label>    
-                            <input type="number" name="new-order-quantity" id="new-order-quantity" placeholder="quant." min="1" required>
-                            <label for="new-order-type">Order Type</label>
-                            <select name="new-order-type" id="new-order-type">
-                                <option value="">type 1</option>
-                                <option value="">type 2</option>
-                                <option value="">type 3</option>
-                                <option value="">type 4</option>
+                <div class="row justify-content-center align-items-center">
+                    <h5 id="portfolio-header" class="text-center">Portfolio: {{portfolio-name}}</h5>
+                </div>
+                
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-md-5">
+
+                        <!-- menu to select portfolio to view -->
+                        <form action="#" method="POST" id="select-portfolio-form" name="select-portfolio-form">
+                            <label for="select-portfolio-id">Select Portfolio:</label>
+                            <select onChange="this.form.submit()" name="select-portfolio-menu" id="select-portfolio-menu">
+                                <option value="portfolio1_id">portfolio1</option>
+                                <option value="portfolio2_id">portfolio2</option>
                             </select>
-                            <button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
-                        
                         </form>
                     </div>
                     
-                    
-                    <div class="row scroll" id="portfolio-scroll">
-                        <table class="stock-table" id="portfolio-table">
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Company</th>
-                                <th># Shares</th>
-                                <th>Purchase Date</th> 
-                                <th>Purchase Price</th>
-                                <th>Current Price</th>
-                                <th>Order Type</th>
-                                
-                            </tr>
-                            <tr>
-                                <td> 
-                                    <a href="stock-detail.html">ABC</a>
-                                </td>
-                                <td>Abc Corp</td>
-                                <td>100</td>
-                                <td>2/7/19</td>
-                                <td>9.34</td>
-                                <td>10.78</td>
-                                <td>Market Order</td>
-                            </tr>
-                            
-                        </table>
-                        
+                    <div class="col-md-7">
+                        <!-- form to create new portfolio -->
+                        <form action="#" method="POST" id="new-portfolio-form" name="new-portfolio-form">
+                            <label for="new-portfolio-name">New Portfolio:</label>
+                            <input type="text" maxlength="15" name="new-portfolio-name" id="new-portfolio-name" placeholder="portfolio name" size="15" required>
+                            <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                        </form>
                     </div>
+                </div>
+                
+                <div class="row scroll" id="portfolio-scroll">
+                    <table class="stock-table" id="portfolio-table">
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company</th>
+                            <th># Shares</th>
+                            <th>Purchase Date</th> 
+                            <th>Purchase Price</th>
+                            <th>Current Price</th>
+                            <th>Order Type</th>
+                            
+                        </tr>
+                        <tr>
+                            <td> 
+                                <a href="stock-detail.html">ABC</a>
+                            </td>
+                            <td>Abc Corp</td>
+                            <td>100</td>
+                            <td>2/7/19</td>
+                            <td>9.34</td>
+                            <td>10.78</td>
+                            <td>Market Order Buy</td>
+                        </tr>
+                        
+                    </table>
+                    
+                </div>
+                
+                <div class="row justify-content-center align-items-center">
+                    <!-- form to submit new stock order -->
+                    <form action="#" method="POST" id="new-order-form" name="new-order-form">
+                        <label for="new-order-symbol">Sym:</label>
+                        <input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="symbol" maxlength="5" size="6" required>
+                        <label for="new-order-quantity"># Shares:</label>    
+                        <input type="number" name="new-order-quantity" id="new-order-quantity" placeholder="quant." min="1" required>
+                        <label for="new-order-type">Order Type</label>
+                        <select name="new-order-type" id="new-order-type">
+                            <option value="ordertype.id">Market Order Buy</option>
+                            <option value="ordertype.id">Market Order Sell</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
+                        
+                    </form>
+                </div>
                 
             </div>
             
             <div class="col-md-5 home-col" id="watchlist-col">
-                    <div class="row justify-content-center align-items-center">
-                        <h5 id="watchlist-header">Watchlist</h5>
-                    </div>
-                    <div class="row align-items-center justify-content-center">
-                        <form action="#" method="POST">
-                            
-                            <label for="new-watchlist-stock">Add a Stock:</label>
-                            <input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="symbol">
-                            
-                            <button type="submit" class="btn btn-primary btn-sm">Add</button>
-                        </form>
-                    </div>
-                    <div class="row scroll align-items-center justify-content-center" id="watchlist-scroll">
-                        <table class="stock-table" id="watchlist-table">
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Company</th>
-                                <th>Current Price</th>
-                                <th>% Change</th>
-                                <th></th>
-                            </tr>
-                            <tr>
-                                <td> <a href="stock-detail.html">ABC</a></td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                                <td>
-                                    <form action="#" method="POST">
-                                        
-                                        <input type="hidden" name="" id="" class="watchlist-delete-btn">
-                                        <button type="submit" class="close" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                        
-                                    </form>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                            <tr>
-                                <td>ABC</td>
-                                <td>Abc Corp</td>
-                                <td>10.78</td>
-                                <td>+5%</td>
-                            </tr>
-                        </table>
-                    </div>
+                <div class="row justify-content-center align-items-center">
+                    <h5 id="watchlist-header">Watchlist</h5>
+                </div>
                 
-                
+                <div class="row scroll align-items-center justify-content-center" id="watchlist-scroll">
+                    <table class="stock-table" id="watchlist-table">
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Company</th>
+                            <th>Current Price</th>
+                            <th>% Change</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <td> <a href="stock-detail.html">ABC</a></td>
+                            <td>Abc Corp</td>
+                            <td>10.78</td>
+                            <td>+5%</td>
+                            <td>
+                                <!-- form with button to delete stock from watchlist -->
+                                <form action="#" method="POST" id="delete-from-watchlist-{{stock_id}}" name="delete-from-watchlist-{{stock_id}}">
+                                    
+                                    <input type="hidden" value="{{stock_id}}" name="stock-{{stock_id}}" id="stock-{{stock_id}}" class="watchlist-delete-btn">
+                                    <button type="submit" class="close" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    
+                                </form>
+                            </td>
+                        </tr>
+                        
+                    </table>
+                </div>
+                <div class="row align-items-center justify-content-center">
+                    <!-- form to add new stock to watchlist -->
+                    <form action="#" method="POST" id="add-watchlist-form" name="add-watchlist-form">
+                        
+                        <label for="new-watchlist-stock">Add a Stock:</label>
+                        <input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="symbol">
+                        
+                        <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                    </form>
+                </div>
                 
                 
             </div>

@@ -1,0 +1,35 @@
+1. login-form
+    text: login-username
+    password: login-password
+
+
+2. create-account-form    
+    text: create-username
+    password: create-password
+
+
+3. select-portfolio-form   
+    select: 
+        value: portfolio.id
+        (one for each portfolio)
+
+
+4. new-portfolio-form
+    text: new-portfolio-name
+
+
+5. new-order-form
+    text: new-order-symbol
+    number: new-order-quantity
+    select:
+        value: {{ordertype.id}}
+        (one for each order type)
+
+
+6. delete-from-watchlist-{{stock_id}}
+(one button per stock in watchlist)
+    hidden: stock-{{stock_id}}
+
+
+7. add-watch-list-form
+    text: new-watchlist-stock

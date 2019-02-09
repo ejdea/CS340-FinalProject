@@ -29,11 +29,10 @@
 
 .scroll {
     overflow-y: scroll;
-    height: 250px;
+    max-height: 250px;
     border: 1px solid black;
     padding: 2px;
-    margin: 2px
-    overflow-x: scroll;
+    margin: 2px;
 }
 
 .stock-table {
