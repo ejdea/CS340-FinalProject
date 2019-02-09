@@ -1,6 +1,9 @@
 -- MySQL dump 10.16  Distrib 10.1.36-MariaDB, for Linux (x86_64)
 --
--- Host: classmysql.engr.oregonstate.edu    Database: cs340_deae
+-- Host:		classmysql.engr.oregonstate.edu
+-- Database:	cs340_deae
+-- Authors:		Edmund Dea, Sam Judkis
+-- Date:		2/9/2019
 -- ------------------------------------------------------
 -- Server version	10.1.22-MariaDB
 
