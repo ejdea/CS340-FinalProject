@@ -33,3 +33,15 @@
 
 7. add-watch-list-form
     text: new-watchlist-stock
+
+8. filter-watchlist-form
+    select:
+        value: sector.id
+        (one for each sector)
+
+9. update-quantity-form
+    number: update-quantity
+
+
+
+

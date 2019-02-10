@@ -1,0 +1,53 @@
+{
+    "username": "Sam",
+    "selected_portfolio": "main portfolio",
+    "user_portfolios": [
+        {
+            "portfolio_id": "1",
+            "portfolio_name": "main portfolio"
+        },
+        {
+            "portfolio_id": "2",
+            "portfolio_name": "alt portfolio"
+        }
+    ],
+    "portfolio_stocks": [
+        {
+            "stock_id": "1",
+            "stock_symbol": "AAPL",
+            "stock_company": "Apple Inc.",
+            "stock_quantity": "100",
+            "order_date": "2/9/19",
+            "purchase_price": "100.00",
+            "current_price": "101.01",
+            "order_type": "Market Order Buy"
+        },
+        {
+            "stock_id": "2",
+            "stock_symbol": "GOOGL",
+            "stock_company": "Alphabet Inc.",
+            "stock_quantity": "200",
+            "order_date": "2/8/19",
+            "purchase_price": "200.00",
+            "current_price": "202.02",
+            "order_type": "Market Order Buy"
+        }
+    ],
+    "watchlist_stocks": [
+        {
+            "stock_id":"1",
+            "stock_symbol":"AAPL",
+            "stock_company":"Apple Inc.",
+            "current_price":"101.01",
+            "percent_change": "10%"
+        },
+        {
+            "stock_id":"2",
+            "stock_symbol":"GOOGL",
+            "stock_company":"Alphabet Inc.",
+            "current_price":"202.02",
+            "percent_change": "20%"
+        }
+    ]
+
+}
