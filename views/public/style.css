@@ -1,0 +1,90 @@
+/* LOGIN PAGE STYLES */
+.account-form-col {
+    border: 1px solid black;
+    width: 85%;
+    margin: auto;
+    margin-top: 15px;
+}
+.account-form-col input {
+    margin: 5px;
+}
+
+.account-form-col button {
+    margin: 10px;
+}
+/* *************************** */
+
+
+
+/* NAVBAR */
+.navbar {
+    border-bottom: 2px solid black;
+    background: #4e8;
+    color: black;
+}
+
+.navbar-brand {
+    border-right: 1px solid black;
+    padding-right: 15px;
+}
+/* *************************** */
+
+
+
+
+/* ************************** */
+/* HOME PAGE STYLES */
+
+/* table and scroll */
+
+.scroll {
+    overflow-y: scroll;
+    max-height: 350px;
+    border: 1px solid black;
+    padding: 2px;
+    margin: 2px
+    
+}
+
+.stock-table {
+    margin: 0px auto;
+    width: 100%;
+
+}
+
+.stock-table tr:nth-child(odd){
+    background-color: #eee;
+    
+}
+
+table, tr, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    font-size: .8rem;
+    text-align: center;
+}
+
+th, td {
+    padding: 3px;
+}
+
+
+/* watchlist */
+#watchlist-col {
+    border-left: 1px solid black;
+}
+
+.watchlist {
+    border-bottom: 1 px solid black;
+    padding-bottom: 5px;
+    width:100%
+}
+
+/* portfolio */
+
+
+/* forms */
+input[type=number] {
+    width: 60px;
+}
+/* **************************** */

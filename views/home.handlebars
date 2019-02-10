@@ -1,0 +1,214 @@
+
+{{!-- navbar --}}
+<nav class="navbar navbar-expand-sm navbar-light">
+    <a href="home_alt.html" class="navbar-brand" id="brand-text">Stock Tracker</a>
+        
+    <button class="navbar-toggler" data-toggle="collapse" data-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+        
+    <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <span class="navbar-text">Logged in as: {{username}}</span>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a href="login.html" id="log-out-link" class="log-out-link nav-link">Log Out</a>
+            </li>
+        </ul>
+            
+    </div>
+</nav>
+
+<div class="container-fluid">  
+    {{!-- row containing portfolio and watchlist --}}
+    <div class="row" id="main-row">
+
+<hr>
+
+        {{!-- column containing portfolio --}}
+        <div class="col-md-7 home-col" id="portfolio-col">
+            
+            {{!-- header --}}
+            <div class="row justify-content-center align-items-center">
+                <h5 id="portfolio-header" class="text-center">Portfolio: {{selected_portfolio}}</h5>
+            </div>
+
+            {{!-- row containing portfolio selection and creation forms --}}
+            <div class="row justify-content-center align-items-center">
+
+                <div class="col-md-5">        
+                    <!-- menu to select portfolio to view -->
+                    <form action="#" method="POST" id="select-portfolio-form" name="select-portfolio-form">
+                        <label for="select-portfolio-id">Select Portfolio:</label>
+                        <select onChange="this.form.submit()" name="select-portfolio-menu" id="select-portfolio-menu">
+                        
+                        {{#each user_portfolios}}
+                            <option value="{{this.portfolio_id}}">{{this.portfolio_name}}</option>
+                        {{/each}}
+                        </select>
+                    </form>
+                </div>
+
+                <div class="col-md-7">
+                    <!-- form to create new portfolio -->
+                    <form action="#" method="POST" id="new-portfolio-form" name="new-portfolio-form">
+                        <label for="new-portfolio-name">New Portfolio:</label>
+                        <input type="text" maxlength="15" name="new-portfolio-name" id="new-portfolio-name" placeholder="portfolio name" size="15" required>
+                        <button type="submit" class="btn btn-primary btn-sm">Create</button>
+                    </form>
+                </div>
+            </div>
+
+            {{!-- table to display portfolio stocks --}}
+            <div class="row scroll" id="portfolio-scroll">
+                {{#if portfolio_stocks}}
+                <table class="stock-table" id="portfolio-table">
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Company</th>
+                        <th># Shares</th>
+                        <th>Purchase Date</th> 
+                        <th>Purchase Price</th>
+                        <th>Current Price</th>
+                        <th>Order Type</th>
+                        
+                    </tr>
+                    
+                    {{#each portfolio_stocks}}
+                    <tr>
+                        <td> 
+                            <a href="stock-detail.html/{{this.stock_id}}">{{this.stock_symbol}}</a>
+                        </td>
+                        <td>{{this.stock_company}}</td>
+                        <td>{{this.stock_quantity}}
+                            <form action="#" method="POST" name="update-quantity-form" id="update-quantity-form">
+                                <input type="number" name="update-quantity" id="update-quantity" min="1" placeholder="quant." required>
+                                <input type="hidden" value="{{this.stock_id}}" name="update-quantity-stock">
+                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                            </form>
+                        </td>
+                        <td>{{this.order_date}}</td>
+                        <td>{{this.purchase_price}}</td>
+                        <td>{{this.current_price}}</td>
+                        <td>{{this.order_type}}</td>
+                    </tr>
+                    {{/each}}
+                    
+                        
+                </table>
+                {{else}}
+                <span>There is nothing in this portfolio</span>
+                {{/if}}
+                    
+            </div>
+
+            {{#if portfolio_stocks}}
+            <div class="row justify-content-center align-items-center">
+                <!-- form to submit new stock order -->
+                <form action="#" method="POST" id="new-order-form" name="new-order-form">
+                    <label for="new-order-symbol">Sym:</label>
+                    <input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="symbol" maxlength="5" size="6" required>
+                    <label for="new-order-quantity"># Shares:</label>    
+                    <input type="number" name="new-order-quantity" id="new-order-quantity" placeholder="quant." min="1" required>
+                    <label for="new-order-type">Order Type</label>
+                    <select name="new-order-type" id="new-order-type">
+                        <option value="ordertype.id">Market Order Buy</option>
+                        <option value="ordertype.id">Market Order Sell</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
+                    
+                </form>
+            </div>
+            {{/if}}
+
+
+        </div>
+
+<hr>
+
+        {{!-- column containing watchlist --}}
+        <div class="col-md-5 home-col" id="watchlist-col">
+
+            {{!-- header --}}
+            <div class="row justify-content-center align-items-center">
+                <h5 id="watchlist-header">Watchlist</h5>
+            </div>
+
+
+            {{!-- dropdown menu to filter watchlist by sector --}}
+            <form action="#" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
+                <label for="filter-watchlist-menu">Filter by Sector:</label>
+                <select onChange="this.form.submit()" name="filter-watchlist-menu" id="filter-watchlist-menu">
+                    <option value="0">All</option>
+                    <option value="1">Consumer Discretionary</option>
+                    <option value="2">Consumer Staples</option>
+                    <option value="3">Energy</option>
+                    <option value="4">Financials</option>
+                    <option value="5">Healthcare</option>
+                    <option value="6">Index</option>
+                    <option value="7">Industrials</option>
+                    <option value="8">Materials</option>
+                    <option value="9">Real Estate</option>
+                    <option value="10">Technology</option>
+                    <option value="11">Telecom</option>
+                    <option value="12">Utilities</option>
+                </select>
+            </form>
+
+            <div class="row scroll align-items-center justify-content-center" id="watchlist-scroll">
+                {{!-- table for watchlist --}}
+                {{#if watchlist_stocks}}
+                <table class="stock-table" id="watchlist-table">
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Company</th>
+                        <th>Current Price</th>
+                        <th>% Change</th>
+                        <th></th>
+                    </tr>
+                    {{#each watchlist_stocks}}
+                    <tr>
+                        <td>
+                            <a href="#">{{this.stock_symbol}}</a>
+                        </td>
+                        <td>{{this.stock_company}}</td>
+                        <td>{{this.current_price}}</td>
+                        <td>{{this.percent_change}}</td>
+                        <td>
+                            <!-- form with button to delete stock from watchlist -->
+                            <form action="#" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
+                                
+                                <input type="hidden" value="{{this.stock_id}}" name="stock-{{this.stock_id}}" class="watchlist-delete-btn">
+                                <button type="submit" class="close" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                    
+                            </form>
+                        </td>
+                    </tr>
+                    {{/each}}
+                        
+                </table>
+                {{else}}
+                <span>You are not watching any stocks in that sector</span>
+                {{/if}}
+            </div>
+
+            <div class="row align-items-center justify-content-center">
+                <!-- form to add new stock to watchlist -->
+                <form action="#" method="POST" id="add-watchlist-form" name="add-watchlist-form">
+                        
+                    <label for="new-watchlist-stock">Add a Stock:</label>
+                    <input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="symbol">
+                        
+                    <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
