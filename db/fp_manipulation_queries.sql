@@ -15,8 +15,20 @@ AND u.password = :password_input
 -- Create new user
 INSERT INTO fp_user (`username`, `password`) VALUES ( :username_input, :password_input )
 
+-- Get user's watchlist
+SELECT s.symbol, s.name, p.open AS current_price, AS percent_change 
+FROM fp_user u, fp_user_stock us, fp_stock s, fp_price p 
+WHERE u.id = us.user_id
+AND us.stock_id = s.id
+AND p.stock_id = s.id
+ORDER BY p.id DESC LIMIT 1
 
-
+-- Get user's portfolio
+SELECT s.symbol, s.name, p.open AS price
+FROM fp_user u, fp_user_stock us, fp_stock s, fp_price p 
+WHERE u.id = us.user_id
+AND us.stock_id = s.id
+AND p.stock_id = s.id
 
 
 
