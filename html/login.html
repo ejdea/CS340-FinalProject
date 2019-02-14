@@ -23,38 +23,40 @@
 		</div>
 	</nav>
 	
-	<div class="container">		
-		<div class="row align-items-center justify-content-center container-content">
-			
-			<div class="col-sm-6">
-				<!-- Reference: https://media.coindesk.com/uploads/2017/08/charts-market-e1501553204818.jpg 
-					 Labelled for non-commercial reuse -->
-				<img src="resources\chart.jpg" class="float-left" id="login-img" />
-			</div>
-			
-			<div class="col-sm-6">
-				<div class="account-form-col">
-					<div class="row justify-content-center align-items-center">
-						<h2>Create Account</h2>
+	<div class="container col-sm-12 container-section">
+		<div class="container">
+			<div class="row align-items-center justify-content-center container-content">
+				
+				<div class="col-sm-6">
+					<!-- Reference: https://media.coindesk.com/uploads/2017/08/charts-market-e1501553204818.jpg 
+						 Labelled for non-commercial reuse -->
+					<img src="resources\chart.jpg" class="float-left" id="login-img" />
+				</div>
+				
+				<div class="col-sm-6">
+					<div class="account-form-col">
+						<div class="row justify-content-center align-items-center">
+							<h2>Create Account</h2>
+						</div>
+						
+						<form action="home.html" method="POST" id="create_account_form" name="create-account-form">
+							<div class="row justify-content-center align-items-center">
+								<input type="text" name="create-username" placeholder="Username" required>
+							</div>
+
+							<div class="row justify-content-center align-items-center">
+								<input type="password" name="create-password" placeholder="Password" minlength="8" required>
+							</div>
+
+							<div class="row justify-content-center align-items-center">
+								<button type="submit" class="btn btn-primary btn-create">Create</button>
+							</div>
+						</form>
 					</div>
 					
-					<form action="home.html" method="POST" id="create_account_form" name="create-account-form">
-						<div class="row justify-content-center align-items-center">
-							<input type="text" name="create-username" placeholder="Username" required>
-						</div>
-
-						<div class="row justify-content-center align-items-center">
-							<input type="password" name="create-password" placeholder="Password" minlength="8" required>
-						</div>
-
-						<div class="row justify-content-center align-items-center">
-							<button type="submit" class="btn btn-primary btn-create">Create</button>
-						</div>
-					</form>
 				</div>
 				
 			</div>
-			
 		</div>
 	</div>
 	
