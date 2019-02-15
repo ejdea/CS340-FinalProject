@@ -56,21 +56,24 @@
 
 .navbar-text {
 	color: white;
+	float: left;
 }
 
 .navbar-dropdown {
 	color: black;
 	list-style: none;
+	display: inline;
+	float: left;
 }
 
 .dropdown-toggle {
 	color: white;
 }
 
-.log-out-link:hover {
-	color: black;
+.dropdown-menu a:hover {
+   background-color: #3b5998 !important;
 }
-
+ 
 #login-form input {
 	background: #f9f8de;
 }
