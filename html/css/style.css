@@ -136,7 +136,7 @@
 .scroll {
     overflow-y: scroll;
     max-height: 350px;
-    border: 1px solid black;
+    border: 1px solid #cccccc;
     padding: 2px;
     margin: 2px
     
@@ -145,7 +145,7 @@
 .stock-table {
     margin: 0px auto;
     width: 100%;
-
+	font-family: "Mina", "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
 }
 
 .stock-table tr:nth-child(odd){
@@ -154,7 +154,7 @@
 }
 
 table, tr, th, td {
-    border: 1px solid black;
+    border: 0;
     border-collapse: collapse;
     font-size: .8rem;
     text-align: center;
@@ -166,7 +166,7 @@ th, td {
 
 
 /*****************************
-         Watchlist
+     Watchlist/Portfolio
 *****************************/
 
 #watchlist-col {
@@ -197,7 +197,7 @@ th, td {
 
 .table-header {
 	background-color: #eeeeee;
-	padding: 1px;
+	padding: 1px 5px 1px 5px;
 	color: #333333;
 	height: 33px;
 }
@@ -215,17 +215,14 @@ th, td {
 	float: right;
 }
 
-hr {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  border: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+.portfolio-buttons {
+	display: inline;
 }
 
-/*****************************
-          Portfolio
-*****************************/
-
+#new-order-form {
+	display: inline;
+	float: right;
+}
 
 /*****************************
         Whole Website
@@ -234,4 +231,25 @@ hr {
 /* Forms */
 input[type=number] {
     width: 60px;
+}
+
+hr {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar {
+    width: 0.5em;
+    height: 0.5em;
+}
+::-webkit-scrollbar-button {
+    background: #ccc;
+}
+::-webkit-scrollbar-track-piece {
+    background: #888;
+}
+::-webkit-scrollbar-thumb {
+    background: #eee;
 }
