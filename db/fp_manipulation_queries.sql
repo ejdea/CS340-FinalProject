@@ -74,12 +74,14 @@ INNER JOIN
 ) t2b
   ON t2a.stock_id = t2b.stock_id;
   
--- Get user's portfolio
-SELECT s.symbol, s.name, p.open AS price
-FROM fp_user u, fp_user_stock us, fp_stock s, fp_price p 
-WHERE u.id = us.user_id
-AND us.stock_id = s.id
-AND p.stock_id = s.id;
+-- Get user's selected portfolio
+SELECT s.symbol, s.name, o.quantity, p.timestamp, p.price, ot.type
+FROM fp_order o INNER JOIN fp_price p ON o.price_id=p.id
+INNER JOIN fp_stock s ON p.stock_id=s.id
+INNER JOIN fp_order_type ot ON o.order_type_id=ot.id
+WHERE o.portfolio_id=:selected_portfolio_id;
+
+
 
 -- Add new user
 INSERT INTO fp_user (`username`, `password`) VALUES ( :username_input, :password_input );
