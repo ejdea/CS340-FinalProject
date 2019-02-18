@@ -180,19 +180,46 @@ th, td {
 }
 
 #portfolio-col {
-	border-top: 4px solid #cccccc;
-	border-right: 2px solid #cccccc;
-	border-bottom: 4px solid #cccccc;
-	border-left: 4px solid #cccccc;
+	border-top: 4px solid #eeeeee;
+	border-right: 2px solid #eeeeee;
+	border-bottom: 4px solid #eeeeee;
+	border-left: 4px solid #eeeeee;
 	padding: 10px;
 }
 
 #watchlist-col {
-	border-top: 4px solid #cccccc;
-	border-right: 4px solid #cccccc;
-	border-bottom: 4px solid #cccccc;
-	border-left: 2px solid #cccccc;
+	border-top: 4px solid #eeeeee;
+	border-right: 4px solid #eeeeee;
+	border-bottom: 4px solid #eeeeee;
+	border-left: 2px solid #eeeeee;
 	padding: 10px;
+}
+
+.table-header {
+	background-color: #eeeeee;
+	padding: 1px;
+	color: #333333;
+	height: 33px;
+}
+
+.table-header form {
+   display: inline;
+}
+
+.table-header-title {
+	font-weight: bolder;
+	float: left;
+}
+
+.table-header-contents {
+	float: right;
+}
+
+hr {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /*****************************
