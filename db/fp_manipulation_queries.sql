@@ -74,14 +74,22 @@ INNER JOIN
 ) t2b
   ON t2a.stock_id = t2b.stock_id;
   
--- Get user's selected portfolio
-SELECT s.symbol, s.name, o.quantity, p.timestamp, p.price, ot.type
-FROM fp_order o INNER JOIN fp_price p ON o.price_id=p.id
-INNER JOIN fp_stock s ON p.stock_id=s.id
-INNER JOIN fp_order_type ot ON o.order_type_id=ot.id
-WHERE o.portfolio_id=:selected_portfolio_id;
-
-
+-- Get user's portfolio data
+SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type
+FROM fp_user u
+INNER JOIN fp_portfolio pf ON u.id = pf.user_id
+INNER JOIN fp_order o ON pf.id = o.portfolio_id
+INNER JOIN fp_stock s ON o.stock_id = s.id
+INNER JOIN fp_order_type ot ON o.order_type_id = ot.id
+INNER JOIN fp_price p ON o.price_id = p.id
+LEFT JOIN
+(
+    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
+	FROM fp_price p
+	GROUP BY p.stock_id DESC
+) t1
+  ON s.id = t1.stock_id
+WHERE u.id = 1
 
 -- Add new user
 INSERT INTO fp_user (`username`, `password`) VALUES ( :username_input, :password_input );
