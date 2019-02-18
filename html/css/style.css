@@ -195,6 +195,10 @@ th, td {
 	padding: 10px;
 }
 
+#select-portfolio-form {
+		vertical-align: middle;
+}
+
 .table-header {
 	background-color: #eeeeee;
 	padding: 1px 5px 1px 5px;
@@ -252,4 +256,25 @@ hr {
 }
 ::-webkit-scrollbar-thumb {
     background: #eee;
+}
+
+button {
+	height: 1.5em;
+	line-height: 0 !important;
+	padding: 0;
+}
+
+
+label {
+	vertical-align: middle !important;
+	height: 1.5em !important;
+}
+
+input {
+	vertical-align: middle !important;
+	height: 1.5em !important;
+}
+
+form {
+	vertical-align: middle !important;
 }
