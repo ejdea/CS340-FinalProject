@@ -14,6 +14,12 @@ FROM fp_user u
 WHERE u.username = :username_input
 AND u.password = :password_input;
 
+-- check if account with username already exists
+-- return 0 rows if account doesn't exist
+SELECT u.id
+FROM fp_user u
+WHERE u.username = :username_input;
+
 -- Get user's watchlist
 SELECT s.symbol, s.name, t1.timestamp, t1.price, t2.percentage_change
 FROM fp_stock s
