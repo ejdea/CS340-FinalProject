@@ -1,310 +1,204 @@
 /******************************************************************************
- * Author:     Edmund Dea
- * Student Id: 933280343
- * Date:       3/15/17
- * Class:      CS290
- * Title:      Week 9 - HW Assignment: Database and Interactions
- * Filename:   scripts.js
- ******************************************************************************/
+* Author:     Edmund Dea
+* Student Id: 933280343
+* Date:       3/1/17
+* Class:      CS290
+* Title:      Final Project
+* Filename:   scripts.js
+******************************************************************************/
 
-/* Reference for Date Format: 
- * https://stackoverflow.com/questions/22061723/regex-date-validation-for-yyyy-mm-dd
+/****************************************
+*               Menubar                 *
+****************************************/
+
+var isScrollEvent = 0;
+var lastScrollTop = 0;
+var minScroll = 25;
+
+var flyInRowCount = 0;
+var flyInRowMax= 5;
+
+/* References:
+ * https://developer.mozilla.org/en-US/docs/Web/Events/scroll
+ * https://stackoverflow.com/questions/4326845/how-can-i-determine-the-direction-of-a-jquery-scroll-event
+ * https://medium.com/@mariusc23/hide-header-on-scroll-down-show-on-scroll-up-67bbaae9a78c
+ * https://www.w3schools.com/cssref/css3_pr_transition-property.asp
+ * https://www.w3schools.com/jsref/met_win_setinterval.asp
  */
-var isNumber = new RegExp("^-?[0-9]{1,}$");
-var isDate =  new RegExp("^[0-9]{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$");
+function verticallyShiftElement(shift_px)
+{
+	var header;
+	var st = $(this).scrollTop();
 
-/* Reference: 
- * https://stackoverflow.com/questions/8624093/node-js-submit-form 
- */
-$("#form1").submit(function(e) {
-    e.preventDefault();
+	/* If the user did not scroll down enough, quit early */
+	if (Math.abs(lastScrollTop - st) <= minScroll)
+		return;
 
-    var $this = $(this);
-    var name = $("#form1 input[id='name']").val();
-    var reps = $("#form1 input[id='reps']").val();
-    var weight = $("#form1 input[id='weight']").val();
-    var date = $("#form1 input[id='date']").val();
-    var lbs = $("#form1 input[name='lbs']:checked").val();
-    var ajaxData = {name : name, reps : reps, weight : weight, date : date, lbs : lbs};
-    var postData = $this.serialize();
+	var menubar = document.getElementById("menubar");
+	var menubar_anchor_elements = document.getElementsByClassName("navbar-anchor");
 
-    if (document.getElementById("workout_table") == undefined) {
-        postData += "&cmd=create";
-    } else {
-        postData += "&cmd=insert";
-    }
+	if (menubar == null || menubar == null || 
+		menubar_anchor_elements == undefined || menubar_anchor_elements == undefined) {
+		return;
+	}
 
-    /*// Reset input form background colors
-    $("#name").css({ "background-color": "#ACCEF7", "color": "#000" });
-    $("#reps").css({ "background-color": "#ACCEF7", "color": "#000" });
-    $("#weight").css({ "background-color": "#ACCEF7", "color": "#000" });
-    $("#date").css({ "background-color": "#ACCEF7", "color": "#000" });
-    $("#lbs").css({ "background-color": "#ACCEF7", "color": "#000" });*/
+	// Select the correct header element based on the current webpage
+	header = document.getElementById("carousel-container");
+	if (header == null || header == undefined) {
+		header = document.getElementById("header-project");
+		if (header == null || header == undefined) {
+			header = document.getElementById("header-about");
+			if (header == null || header == undefined) {
+				header = document.getElementById("header-contact");
+			}
+		}
+	}
+	
+	if (st > menubar.offsetHeight && st < header.offsetHeight) {
+		if (st > lastScrollTop) {
+			$('nav').removeClass('navbar-down1').addClass('navbar-up');
+			menubar.style.setProperty("top", menubar.clientHeight * -2 + "px");
+		} else {
+			$('nav').removeClass('navbar-down2').removeClass('navbar-up').addClass('navbar-down1');
+			menubar.style.setProperty("top", "0px");
+		}
+	} else if (st > header.offsetHeight) {
+		if (st > lastScrollTop) {
+			$('nav').removeClass('navbar-down1').addClass('navbar-up');
+			menubar.style.setProperty("top", menubar.clientHeight * -2 + "px");
+		} else {
+			$('nav').removeClass('navbar-up').addClass('navbar-down2');
+			menubar.style.setProperty("top", "0px");
+		}
+	} else {
+		$('nav').removeClass('navbar-up').removeClass('navbar-down2').addClass('navbar-down1');
+		menubar.style.setProperty("top", "0px");
+	}
+	lastScrollTop = st;
+}
 
-    // Validate input
-    if (!isValidInput(name, reps, weight, date, lbs)) {
-        return;
-    }
+var carouselIntervalFunc = setInterval(function() {
+	if (isScrollEvent) {
+		isScrollEvent = 0;
+		verticallyShiftElement();
 
-    $.ajax({
-        type: 'POST',
-        url: $this.attr("action"),
-        data: postData,
-        success: function(data) {
-            var obj = JSON.parse(data);
-            ajaxData.id = obj.insertId;
-            insertRow(ajaxData);
-        },
-        error: function(jqXHR, textStatus) { 
-            alert("[AJAX Error] " + textStatus);
-        },
-        complete: function(jqXHR, textStatus) { 
-            //console.log("[AJAX Complete] " + textStatus); 
-        },
-        datatype: 'json'
-    });
+		if (flyInRowCount < flyInRowMax)
+			flyRowIn();
+	}
+}, 100);
+
+window.addEventListener("scroll", function() {
+	isScrollEvent = 1;
 });
 
-function insertRow(data) {
-    var table = document.getElementById("workout_table");
+/****************************************
+*              Fly-In Rows              *
+****************************************/
 
-    if (table == undefined) {
-        var main_div = document.getElementsByClassName("workout");
+/* Reference:
+ * https://css-tricks.com/slide-in-as-you-scroll-down-boxes/
+ * https://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
+ * https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
+ * https://developer.mozilla.org/en-US/docs/Web/API/Window/pageYOffset
+ * https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+ */
+function isElementVisible(elem)
+{
+	var isRectVisible = false;
+	var clientRect = elem.getBoundingClientRect();
 
-        if (main_div == undefined) {
-            console.log("main_div undefined");
-        } else {
-            table = document.createElement("table");
-            table.setAttribute("id", "workout_table");
+	isRectVisible = clientRect.top >= 0 &&
+					clientRect.top <= (window.innerHeight || document.documentElement.clientHeight);
 
-            var tr_head = document.createElement("tr");
-
-            var th1 = document.createElement("th");
-            th1.textContent = "Name";
-            tr_head.appendChild(th1);
-
-            var th2 = document.createElement("th");
-            th2.textContent = "Reps";
-            tr_head.appendChild(th2);
-
-            var th3 = document.createElement("th");
-            th3.textContent = "Weight";
-            tr_head.appendChild(th3);
-
-            var th4 = document.createElement("th");
-            th4.textContent = "Date";
-            tr_head.appendChild(th4);
-
-            var th5 = document.createElement("th");
-            th5.textContent = "Lbs";
-            tr_head.appendChild(th5);
-
-            var th6 = document.createElement("th");
-            th6.textContent = "Options";
-            tr_head.appendChild(th6);
-
-            table.appendChild(tr_head);
-            main_div[0].appendChild(table);
-        }
-    }
-
-    var tr = document.createElement("tr");
-
-    var id = document.createElement("input");
-    id.setAttribute("type", "hidden");
-    id.setAttribute("value", data.id);
-    tr.appendChild(id);
-
-    for (var prop in data) {
-        if (!(prop === "id")) {
-            var td = document.createElement("td");
-
-            var td_span = document.createElement("span");
-            td_span.setAttribute("class", "show");
-            td_span.setAttribute("id", 'workout1-' + prop + '-' + data.id);
-            if (prop === "lbs") {
-                td_span.innerHTML = (data[prop] === "1") ? "Lbs" : "Kg";
-            } else {
-                td_span.innerHTML = data[prop];
-            }
-            td.appendChild(td_span);
-
-            var td_input = document.createElement("input");
-            td_input.setAttribute("class", "hidden");
-            td_input.setAttribute("id", 'workout2-' + prop + '-' + data.id);
-            td_input.value = data[prop];
-            td.appendChild(td_input);
-
-            tr.appendChild(td);
-        }
-    }
-
-    var td_buttons = document.createElement("td");
-    td_buttons.classList.add("td_button");
-
-    var editButton = document.createElement("button");
-    editButton.setAttribute("type", "button");
-    editButton.setAttribute("id", "edit-" + data.id);
-    editButton.setAttribute("onclick", "editRow(this, " + data.id + ")");
-    editButton.classList.add("td_button");
-    editButton.textContent = "Edit";
-    td_buttons.appendChild(editButton);
-
-    var saveButton = document.createElement("button");
-    saveButton.setAttribute("type", "button");
-    saveButton.setAttribute("id", "save-" + data.id);
-    saveButton.setAttribute("class", "hidden");
-    saveButton.setAttribute("onclick", "saveRow(this, " + data.id + ")");
-    saveButton.classList.add("td_button");
-    saveButton.textContent = "Save Changes";
-    td_buttons.appendChild(saveButton);
-
-    var deleteButton = document.createElement("button");
-    deleteButton.setAttribute("type", "button");
-    deleteButton.setAttribute("id", "delete-" + data.id);
-    deleteButton.setAttribute("onclick", "deleteRow(this, " + data.id + ")");
-    deleteButton.classList.add("td_button");
-    deleteButton.textContent = "Delete";
-    td_buttons.appendChild(deleteButton);
-
-    tr.appendChild(td_buttons);
-
-    table.appendChild(tr);
+	return isRectVisible;
 }
 
-function editRow(btn, id) {
-    $('#workout1-name-' + id).removeClass("show").addClass("hidden");
-    $('#workout2-name-' + id).removeClass("hidden").addClass("show");
-    $('#workout1-reps-' + id).removeClass("show").addClass("hidden");
-    $('#workout2-reps-' + id).removeClass("hidden").addClass("show");
-    $('#workout1-weight-' + id).removeClass("show").addClass("hidden");
-    $('#workout2-weight-' + id).removeClass("hidden").addClass("show");
-    $('#workout1-date-' + id).removeClass("show").addClass("hidden");
-    $('#workout2-date-' + id).removeClass("hidden").addClass("show");
-    $('#workout1-lbs-' + id).removeClass("show").addClass("hidden");
-    $('#workout2-lbs-' + id).removeClass("hidden").addClass("show");
-    $('#edit-' + id).removeClass("show").addClass("hidden");
-    $('#save-' + id).removeClass("hidden").addClass("show");
+function flyRowIn() {
+	var rowList = document.getElementsByClassName("row");
+
+	for (var i = 0; i < rowList.length; i++) {
+		var el = rowList[i];
+		
+		if (el.id && isElementVisible(el) && 
+			el.className.includes("row-body") && 
+			!el.className.includes("fly-in-row")) {
+			el.classList.remove("row-body");
+			el.classList.add("fly-in-row");
+			flyInRowCount++;
+		}
+	}
 }
 
-function isValidInput(name, reps, weight, date, lbs) {
-    if (!name || name.length === 0) {
-        //$("#name").css({ "background-color": "red", "color": "#fff" });
-        alert("Error: Name is invalid.");
-        return false;
-    }
-    if (lbs === undefined) {
-        //$("#lbs").css({ "background-color": "red", "color": "#fff" });
-        alert("Error: Lbs or Kilos must be selected.");
-        return false;
-    }
-    else if (lbs != 1 && lbs != 0) {
-        alert("Error: Invalid weight unit (lbs=1, kg=0).");
-        return false;
-    }
-    if (!reps || reps.length === 0 || !isNumber.test(reps)) {
-        //$("#reps").css({ "background-color": "red", "color": "#fff" });
-        alert("Error: Reps is invalid.");
-        return false;
-    }
-    if (!weight || weight.length === 0 || !isNumber.test(weight)) {
-        //$("#weight").css({ "background-color": "red", "color": "#fff" });
-        alert("Error: Weight is invalid.");
-        return false;
-    }
-    if (!date || date.date === 0 || !isDate.test(date)) {
-        //$("#date").css({ "background-color": "red", "color": "#fff" });
-        alert("Error: Date is invalid.");
-        return false;
-    }
+/****************************************
+*              Carousel                 *
+****************************************/
 
-    return true;
+/* Reference: 
+ * https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_slideshow
+ */
+var slideIndex = 1;
+var interval = 4000;
+var maxSlides = document.getElementsByClassName("carousel-slide").length;
+var slideIntervalFunc = setInterval(slideInterval, interval);
+
+function clickSlide(i) {
+	// Set next slide
+	slideIndex = i;
+
+	// Display next slide
+	displaySlide();
+
+	// Reset slide interval
+	clearInterval(slideIntervalFunc);
+	slideIntervalFunc = setInterval(slideInterval, interval);
 }
 
-function saveRow(btn, id) {
-    var row = btn.parentNode;
-    var span_name = document.getElementById('workout1-name-' + id);
-    var span_reps = document.getElementById('workout1-reps-' + id);
-    var span_weight = document.getElementById('workout1-weight-' + id);
-    var span_date = document.getElementById('workout1-date-' + id);
-    var span_lbs = document.getElementById('workout1-lbs-' + id);
+function displaySlide() {
+	var slides = document.getElementsByClassName("carousel-slide");
+	var indicator = document.getElementsByClassName("carousel-indicator");
 
-    var new_name = document.getElementById('workout2-name-' + id).value;
-    var new_reps = document.getElementById('workout2-reps-' + id).value;
-    var new_weight = document.getElementById('workout2-weight-' + id).value;
-    var new_date = document.getElementById('workout2-date-' + id).value;
-    var new_lbs = document.getElementById('workout2-lbs-' + id).value;
+	// Verify carousel is loaded
+	if (slides == null || slides == undefined || 
+		indicator == null || indicator == undefined) {
+		console.log("undefined carousel");
+		return;
+	}
 
-    // Validate input
-    if (!isValidInput(new_name, new_reps, new_weight, new_date, new_lbs)) {
-        return;
-    }
+	// Reset slideshow and validate input
+	if (slideIndex < 0 || slideIndex > maxSlides) {
+		slideIndex = 1;
+	}
 
-    var postdata = { cmd : "edit",
-                     id : id,
-                     name : new_name,
-                     reps : new_reps,
-                     weight : new_weight,
-                     date : new_date,
-                     lbs : new_lbs
-                   };
-    var $this = $(this);
+	// Hide all slides from the display
+	for (var i = 0; i < slides.length; i++) {
+		slides[i].style.display = "none";
+	}
 
-    $.ajax({
-        type: 'POST',
-        url: $this.closest("button").attr("action"),
-        data: postdata,
-        success: function(data) {
-            span_name.innerText = new_name;
-            span_reps.innerText = new_reps;
-            span_weight.innerText = new_weight;
-            span_date.innerText = new_date;
-            if (new_lbs == 1) {
-                span_lbs.innerText = "Lbs";
-            } else if (new_lbs == 0) {
-                span_lbs.innerText = "Kg";
-            }
-
-            $('#workout2-name-' + id).removeClass("show").addClass("hidden");
-            $('#workout1-name-' + id).removeClass("hidden").addClass("show");
-            $('#workout2-reps-' + id).removeClass("show").addClass("hidden");
-            $('#workout1-reps-' + id).removeClass("hidden").addClass("show");
-            $('#workout2-weight-' + id).removeClass("show").addClass("hidden");
-            $('#workout1-weight-' + id).removeClass("hidden").addClass("show");
-            $('#workout2-date-' + id).removeClass("show").addClass("hidden");
-            $('#workout1-date-' + id).removeClass("hidden").addClass("show");
-            $('#workout2-lbs-' + id).removeClass("show").addClass("hidden");
-            $('#workout1-lbs-' + id).removeClass("hidden").addClass("show");
-        },
-        error: function(jqXHR, textStatus) { 
-            alert("[AJAX Error] " + textStatus);
-        },
-        complete: function(jqXHR, textStatus) {
-            $('#edit-' + id).removeClass("hidden").addClass("show");
-            $('#save-' + id).removeClass("show").addClass("hidden");
-        },
-        datatype: 'json'
-    });
+	// Display the current slide
+	if (slides[slideIndex-1] != null) {
+		slides[slideIndex-1].style.display = "block";
+	}
 }
 
-function deleteRow(btn, id) {
-    var row = btn.parentNode.parentNode;
-    var data = {cmd : "delete", id : id};
-    var $this = $(this);
+function slideInterval() {
+	var slides = document.getElementsByClassName("carousel-slide");
+	var indicator = document.getElementsByClassName("carousel-indicator");
 
-    $.ajax({
-        type: 'POST',
-        url: $this.closest("button").attr("action"),
-        data: data,
-        success: function(data) {
-            row.parentNode.removeChild(row);
-        },
-        error: function(jqXHR, textStatus) { 
-            alert("[AJAX Error] " + textStatus);
-        },
-        complete: function(jqXHR, textStatus) { 
-            //console.log("[AJAX Complete] " + textStatus); 
-        },
-        datatype: 'json'
-    });
+	// Verify carousel is loaded
+	if (!slides || !indicator) {
+		return;
+	}
+	
+	displaySlide(slideIndex);
+	slideIndex++;
+}
+
+displaySlide(slideIndex);
+
+function downloadFile() {
+	/* Reference:
+	 * http://www.forrestchase.com.au/about-forrest-chase/funny-cat-pictures-016-001/
+	 * Labelled for noncommercial reuse
+	 */
+	window.location.href = "http://www.forrestchase.com.au/fcwp/wp-content/uploads/2015/04/funny-cat-pictures-016-001.jpg";
 }

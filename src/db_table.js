@@ -68,7 +68,7 @@ app.get('/', function(req, res, next) {
 });
 
 function showTable(res) {
-    var sqlStr = "SELECT id, name, reps, weight, DATE_FORMAT(date, '%Y-%m-%d') AS date, lbs FROM workouts";
+    var sqlStr = "SELECT * FROM fp_user";
 
     pool.query(sqlStr, function(err, data) {
         if (err) {
@@ -76,9 +76,13 @@ function showTable(res) {
           return;
         }
 
-        res.render('home', { data : data });
+        res.render('login', { data : data });
     });
 }
+
+app.post('/home', function(req, res, next) {
+    res.render('home');
+});
 
 app.get('/reset-table', function(req, res, next){
     var context = {};

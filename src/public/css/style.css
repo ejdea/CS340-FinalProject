@@ -1,106 +1,280 @@
-/******************************************************************************
-* Author:     Edmund Dea
-* Student Id: 933280343
-* Date:       3/14/17
-* Class:      CS290
-* Title:      Week 9 - HW Assignment: Database and Interactions
-* Filename:   style.css
-******************************************************************************/
-
-body
-{
-    background: url("../runner.jpg") no-repeat center center fixed;
-    background-size: 100%;
-    font-family: "Mina", "Ubuntu", "Muli", "Work+Sans", sans-serif;
-}
-
-.workout
-{
-    margin: 20px;
-}
-
-.workoutForm
-{
+/*****************************
+      Login Page Styles
+*****************************/
+.account-form-col {
     border: 0;
-    background-color: #fff;
-    padding: 10px;
-    color: #1A5276;
-    font-weight: bold;
-    width: 59vw;
-    text-align: center;
-
-    /* Reference:
-     * Not all browsers behave the same for opacity.
-     * https://stackoverflow.com/questions/11807286/how-to-make-div-background-color-transparent-in-css
-     */
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; /* IE 8 */
-    filter: alpha(opacity=80); /* IE 5-7 */
-    -moz-opacity: 0.80; /* Netscape */
-    -khtml-opacity: 0.80; /* Safari 1.x */
-    opacity: 0.80; /* Good browsers */
+    width: 85%;
+    margin: auto;
+    margin-top: 15px;
+}
+.account-form-col input {
+    margin: 5px;
 }
 
-table
-{
-    border: 0;
-    background-color: #fff;
-    border-collapse: collapse;
-    padding: 0;
-    margin-top: 20px;
-    color: #1A5276;
-    text-align: center;
-    /*width: 60vw;*/
-
-    /* Reference:
-     * Not all browsers behave the same for opacity.
-     * https://stackoverflow.com/questions/11807286/how-to-make-div-background-color-transparent-in-css
-     */
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)"; /* IE 8 */
-    filter: alpha(opacity=80); /* IE 5-7 */
-    -moz-opacity: 0.80; /* Netscape */
-    -khtml-opacity: 0.80; /* Safari 1.x */
-    opacity: 0.80; /* Good browsers */
+.account-form-col button {
+    margin: 10px;
 }
 
-table tr th
+/*****************************
+            NAVBAR           
+*****************************/
+
+.navbar {
+	top: 0;
+    border: none;
+	margin: 0;
+	padding: 0;
+    background: #485167;
+	display: flex;
+	justify-content: center;
+}
+
+.navbar a:hover {
+	color: white;
+}
+
+.navbar-content {
+	width: 55%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.navbar-brand {
+	color: white;
+	font-size: 2em;
+	font-weight: bolder;
+	font-family: "Mina", "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
+}
+
+.navbar-brand-home {
+	color: white;
+	font-size: 1em;
+	font-weight: bolder;
+	font-family: "Mina", "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
+}
+
+.navbar-text {
+	color: white;
+	float: left;
+}
+
+.navbar-dropdown {
+	color: black;
+	list-style: none;
+	display: inline;
+	float: left;
+}
+
+.dropdown-toggle {
+	color: white;
+}
+
+.dropdown-menu a:hover {
+   background-color: #3b5998 !important;
+}
+ 
+#login-form input {
+	background: #f9f8de;
+}
+
+#login-form button {
+	border-radius: 5px;
+	height: 30px;
+	text-align: center;
+	vertical-align: top;
+	line-height: 0;
+	background: #2f55a4;
+	border: 1px solid #cccccc;
+}
+
+/*****************************
+      Login Page Content
+*****************************/
+
+.container-section {
+	background-image: linear-gradient(#cccccc, #ffffff);
+}
+
+.container-content {
+	padding: 100px 0 100px 0;
+	display: flex;
+	height: 100%;
+}
+
+.btn-create {
+	background-image: linear-gradient(#57c68b, #309660);
+}
+
+#login-img {
+	border-radius: 10px;
+}
+
+/*****************************
+         Page Footer
+*****************************/
+
+.footer
 {
-    background-color: #2a6592;
-    color: #fff;
-    padding: 10px;
+	height: 2.5vh;
+	font-size: 1.35vh;
+	width: 100%;
+	background-color: #485167;
+	color: white;
+	text-align: center;
+	vertical-align: middle;
+	position: absolute;
+	bottom: 0;
+}
+
+/*****************************
+      HOME PAGE STYLES
+*****************************/
+
+/* table and scroll */
+
+.scroll {
+    overflow-y: scroll;
+    max-height: 350px;
     border: 1px solid #cccccc;
-
-}
-
-table tr td
-{
-    border: 1px solid #cccccc;
-    padding: 5px;
-    margin: 0;
+    padding: 2px;
+    margin: 2px
     
 }
 
-.workout_td
-{
-    width: 10vw;
+.stock-table {
+    margin: 0px auto;
+    width: 100%;
+	font-family: "Mina", "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
 }
 
-button
-{
-    margin: 2px;
-    padding: 2px 5px 2px 5px;
-    background: #F5B041;
-    box-shadow: none;
+.stock-table tr:nth-child(odd){
+    background-color: #eee;
+    
+}
+
+table, tr, th, td {
     border: 0;
-    border-radius: 5px;
-    -webkit-appearance: none;
+    border-collapse: collapse;
+    font-size: .8rem;
+    text-align: center;
 }
 
-.hidden
-{
-    display: none;
+th, td {
+    padding: 3px;
 }
 
-.show
-{
-    display: inline;
+
+/*****************************
+     Watchlist/Portfolio
+*****************************/
+
+#watchlist-col {
+    border-left: 1px solid black;
+}
+
+.watchlist {
+    border-bottom: 1 px solid black;
+    padding-bottom: 5px;
+    width:100%
+}
+
+#portfolio-col {
+	border-top: 4px solid #eeeeee;
+	border-right: 2px solid #eeeeee;
+	border-bottom: 4px solid #eeeeee;
+	border-left: 4px solid #eeeeee;
+	padding: 10px;
+}
+
+#watchlist-col {
+	border-top: 4px solid #eeeeee;
+	border-right: 4px solid #eeeeee;
+	border-bottom: 4px solid #eeeeee;
+	border-left: 2px solid #eeeeee;
+	padding: 10px;
+}
+
+#select-portfolio-form {
+		vertical-align: middle;
+}
+
+.table-header {
+	background-color: #eeeeee;
+	padding: 1px 5px 1px 5px;
+	color: #333333;
+	height: 33px;
+}
+
+.table-header form {
+   display: inline;
+}
+
+.table-header-title {
+	font-weight: bolder;
+	float: left;
+}
+
+.table-header-contents {
+	float: right;
+}
+
+.portfolio-buttons {
+	display: inline;
+}
+
+#new-order-form {
+	display: inline;
+	float: right;
+}
+
+/*****************************
+        Whole Website
+*****************************/
+
+/* Forms */
+input[type=number] {
+    width: 60px;
+}
+
+hr {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar {
+    width: 0.5em;
+    height: 0.5em;
+}
+::-webkit-scrollbar-button {
+    background: #ccc;
+}
+::-webkit-scrollbar-track-piece {
+    background: #888;
+}
+::-webkit-scrollbar-thumb {
+    background: #eee;
+}
+
+button {
+	height: 1.5em;
+	line-height: 0 !important;
+	padding: 0;
+}
+
+
+label {
+	vertical-align: middle !important;
+	height: 1.5em !important;
+}
+
+input {
+	vertical-align: middle !important;
+	height: 1.5em !important;
+}
+
+form {
+	vertical-align: middle !important;
 }
