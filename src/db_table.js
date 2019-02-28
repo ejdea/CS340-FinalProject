@@ -37,12 +37,10 @@ app.get('/home', function(req, res, next) {
         // if not logged in, render login page
         res.render('login');
     }
-    //else {
-    //    var context = {};
-    //    context.username = req.session.logged_in_username;
-    //   res.render('home', context);
-	getPortfolioTable(res);
-    //}
+    else {
+        // user is logged in	
+        getPortfolioTable(req, res);
+    }
 });
 
 app.post('/home', function(req, res, next) {
@@ -52,10 +50,8 @@ app.post('/home', function(req, res, next) {
         res.render('login');
     }
     else {
-        //var context = {};
-        //context.username = req.session.logged_in_username;
-        //res.render('home', context);
-	    getPortfolioTable(res);
+	    // user is logged in
+        getPortfolioTable(req, res);
         return;
     }
     //}
@@ -82,8 +78,8 @@ app.get('/logout', function(req, res, next) {
 
 // handle login and account creation requests
 app.post('/login', function(req, res, next) {
-    console.log(req.body.form_type);
-    console.log(req.body.login_username);
+    //console.log(req.body.form_type);
+    //console.log(req.body.login_username);
     var form_type = req.body.form_type;
     var context = {};
     if (form_type == "login_form") {
@@ -111,7 +107,7 @@ app.post('/login', function(req, res, next) {
 });
 
 
-function getPortfolioTable(res) {
+function getPortfolioTable(req, res) {
     var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
@@ -134,15 +130,15 @@ function getPortfolioTable(res) {
           return;
         }
 
-        getWatchlist(res, pf_data);
+        getWatchlist(req, res, pf_data);
         return;
         //res.render('home', { pf_data : pf_data });
     });
 }
 
 
-function getWatchlist(res, pf_data) {
-    let list = [];
+function getWatchlist(req, res, pf_data) {
+    let list = {};
     list.pf_data = pf_data;
 
     var today = new Date();
@@ -196,154 +192,16 @@ function getWatchlist(res, pf_data) {
         }
 
         list.wl_data = wl_data;
-
-        console.log(list);
-
         list.username = req.session.logged_in_username;
+
+        //console.log(list);
+
         res.render('home', list);
     });
 }
 
-app.get('/reset-table', function(req, res, next){
-    var context = {};
-    pool.query("DROP TABLE IF EXISTS workouts", function(err) {
-        var createString = "CREATE TABLE workouts(" +
-            "id INT PRIMARY KEY AUTO_INCREMENT," +
-            "name VARCHAR(255) NOT NULL," +
-            "reps INT," +
-            "weight INT," +
-            "date DATE," +
-            "lbs BOOLEAN)";
 
-        pool.query(createString, function(err) {
-          context.results = "Table reset";
-          res.render('home', context);
-        });
-    });
-});
-
-app.post('/', function(req, res, next) {
-    var cmd = req.body["cmd"];
-
-    switch (cmd) {
-        case "create":
-            // Check if table already exists
-            var sqlStr = "SELECT 1 FROM information_schema.tables " +
-                         "WHERE table_schema = (?) AND table_name = (?)";
-
-            pool.query(sqlStr, [sqlDb, 'workouts'], function(err, results) {
-                if (err) {
-                    next(err);
-                    return;
-                }
-
-                if (results.length === 0) {
-                    // If the table doesn't exist yet, then create it
-                    var sqlStr = "CREATE TABLE workouts(" +
-                        "id INT PRIMARY KEY AUTO_INCREMENT," +
-                        "name VARCHAR(255) NOT NULL," +
-                        "reps INT," +
-                        "weight INT," +
-                        "date DATE," +
-                        "lbs BOOLEAN)";
-
-                    pool.query(sqlStr, function(err) {
-                        if (err) {
-                            next(err);
-                            return;
-                        }
-
-                        // Now that the table is created, insert a new row
-                        var sqlStr = "INSERT INTO `workouts`(`name`, `reps`, `weight`, `date`, `lbs`) VALUES (?, ?, ?, ?, ?)";
-                        var sqlVar = [req.body["name"], 
-                                      req.body["reps"], 
-                                      req.body["weight"], 
-                                      req.body["date"],
-                                      req.body["lbs"]
-                                     ];
-
-                        pool.query(sqlStr, sqlVar, function(err, result) {
-                            if(err) {
-                                next(err);
-                                return;
-                            }
-
-                            // Send insertid back to client-side
-                            res.end(JSON.stringify(result));
-                        });
-                    });
-                } else {
-                    // The table already exists, so insert a new row
-                    var sqlStr = "INSERT INTO `workouts`(`name`, `reps`, `weight`, `date`, `lbs`) VALUES (?, ?, ?, ?, ?)";
-                    var sqlVar = [req.body["name"], 
-                                  req.body["reps"], 
-                                  req.body["weight"], 
-                                  req.body["date"],
-                                  req.body["lbs"]
-                                 ];
-
-                    pool.query(sqlStr, sqlVar, function(err, result) {
-                        if(err) {
-                            next(err);
-                            return;
-                        }
-
-                        // Send insertid back to client-side
-                        res.end(JSON.stringify(result));
-                    });
-                }
-            });
-            break;
-        case "delete":
-            var sqlStr = "DELETE FROM `workouts` WHERE `id` = (?)";
-            var sqlVar = [req.body["id"]];
-
-            pool.query(sqlStr, sqlVar, function(err, result) {
-                if(err) {
-                    next(err);
-                    return;
-                }
-
-                // Send insertid back to client-side
-                res.end(JSON.stringify(result));
-            });
-            break;
-        case "edit":
-            var sqlStr = "UPDATE `workouts` SET `name`=?,`reps`=?,`weight`=?,`date`=?,`lbs`=? WHERE `id`=?";
-            var sqlVar = [req.body["name"], req.body["reps"], req.body["weight"], req.body["date"], req.body["lbs"], req.body["id"]];
-
-            pool.query(sqlStr, sqlVar, function(err, result) {
-                if(err) {
-                    next(err);
-                    return;
-                }
-
-                // Send insertid back to client-side
-                res.end(JSON.stringify(result));
-            });
-            break;
-        case "insert":
-            var sqlStr = "INSERT INTO `workouts`(`name`, `reps`, `weight`, `date`, `lbs`) VALUES (?, ?, ?, ?, ?)";
-            var sqlVar = [req.body["name"], 
-                          req.body["reps"], 
-                          req.body["weight"], 
-                          req.body["date"],
-                          req.body["lbs"]
-                         ];
-
-            pool.query(sqlStr, sqlVar, function(err, result) {
-                if(err) {
-                    next(err);
-                    return;
-                }
-
-                // Send insertid back to client-side
-                res.end(JSON.stringify(result));
-            });
-            break;
-    }
-});
-
+        
 app.use(function(req,res){
     res.status(404);
     res.render('404');
