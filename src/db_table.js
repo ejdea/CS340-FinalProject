@@ -39,12 +39,25 @@ app.get('/home', function(req, res, next) {
     }
     else {
         var context = {};
-        context.username = req.session.logged_in_username;;
+        context.username = req.session.logged_in_username;
         res.render('home', context);
+	showPortfolioTable(res);
     }
-})
+});
 
-
+app.post('/home', function(req, res, next) {
+    // check if the user is logged in
+    /*if (!req.session.logged_in_username) {
+        // if not logged in, render login page
+        res.render('login');
+    }
+    else {*/
+        //var context = {};
+        //context.username = req.session.logged_in_username;
+        //res.render('home', context);
+	getPortfolioTable(res);
+    //}
+});
 
 app.get('/', function(req, res, next) {
     // if user is already logged in, redirect request to homepage
@@ -91,22 +104,96 @@ app.get('/', function(req, res, next) {
     });
 });
 
-function showTable(res) {
-    var sqlStr = "SELECT * FROM fp_user";
+function getPortfolioTable(res) {
+    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type " +
+                 "FROM fp_user u " +
+                 "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
+                 "INNER JOIN fp_order o ON pf.id = o.portfolio_id " +
+                 "INNER JOIN fp_stock s ON o.stock_id = s.id " +
+                 "INNER JOIN fp_order_type ot ON o.order_type_id = ot.id " +
+                 "INNER JOIN fp_price p ON o.price_id = p.id " +
+                 "LEFT JOIN " +
+                 "( " +
+                 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                 "	FROM fp_price p " +
+                 "	GROUP BY p.stock_id DESC " +
+                 ") t1 " +
+                 "  ON s.id = t1.stock_id " +
+                 "WHERE u.id = (?)";
 
-    pool.query(sqlStr, function(err, data) {
+    pool.query(sqlStr, [ 1 ], function(err, pf_data) {
         if (err) {
           next(err);
           return;
         }
 
-        res.render('login', { data : data });
+        getWatchlist(res, pf_data);
+
+        //res.render('home', { pf_data : pf_data });
     });
 }
 
-app.post('/home', function(req, res, next) {
-    res.render('home');
-});
+function getWatchlist(res, pf_data) {
+    let list = [];
+    list.pf_data = pf_data;
+
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth() + 1; // January=0
+    var yyyy = today.getFullYear();
+    var date = yyyy + '-' + mm + '-' + dd;
+
+    var sqlStr = "SELECT s.symbol, s.name, t1.timestamp, t1.price, t2.percentage_change " +
+		 "FROM fp_stock s " +
+		 "INNER JOIN " +
+		 "( " +
+		 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+		 "	FROM fp_price p " +
+		 "	GROUP BY p.stock_id DESC " +
+		 ") t1 " +
+		 "  ON s.id = t1.stock_id " +
+		 "INNER JOIN " +
+		 "( " +
+		 "	SELECT ((t2b.price - t2a.price) / t2a.price * 100) AS percentage_change, t2a.stock_id " +
+		 "	FROM " +
+		 "	( " +
+		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+		 "		FROM fp_price p " +
+		 "		WHERE p.timestamp >= concat(" + date + ", ' 00:00:00') " +
+		 "		AND p.timestamp <= concat(" + date + ", ' 23:59:59') " +
+		 "		GROUP BY p.stock_id ASC " +
+		 "	) t2a " +
+		 "	INNER JOIN " +
+		 "	( " +
+		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+		 "		FROM fp_price p " +
+		 "		WHERE p.timestamp >= concat(" + date + ", ' 00:00:00') " +
+		 "		AND p.timestamp <= concat(" + date + ", ' 23:59:59') " +
+		 "		GROUP BY p.stock_id DESC " +
+		 "	) t2b " +
+		 "	  ON t2a.stock_id = t2b.stock_id " +
+		 ") t2 " +
+		 "  ON t2.stock_id = t1.stock_id " +
+		 "INNER JOIN fp_user_stock us  " +
+		 "  ON us.stock_id = t1.stock_id " +
+		 "INNER JOIN fp_user u " +
+		 "  ON us.user_id = u.id " +
+		 "  AND u.id = (?)";
+
+    pool.query(sqlStr, [ 1 ], function(err, wl_data) {
+        if (err) {
+            console.log(err);
+            next(err);
+            return;
+        }
+
+        list.wl_data = wl_data;
+
+        console.log(list);
+
+        res.render('home', list);
+    });
+}
 
 app.get('/reset-table', function(req, res, next){
     var context = {};
