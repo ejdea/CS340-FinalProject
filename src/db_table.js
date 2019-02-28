@@ -31,31 +31,6 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', port);
 
-app.get('/home', function(req, res, next) {
-    // check if the user is logged in
-    if (!req.session.logged_in_username) {
-        // if not logged in, render login page
-        res.render('login');
-    }
-    else {
-        // user is logged in	
-        getPortfolioTable(req, res);
-    }
-});
-
-app.post('/home', function(req, res, next) {
-    // check if the user is logged in
-    if (!req.session.logged_in_username) {
-        // if not logged in, render login page
-        res.render('login');
-    }
-    else {
-	    // user is logged in
-        getPortfolioTable(req, res);
-        return;
-    }
-    //}
-});
 
 app.get('/', function(req, res, next) {
     // if user is already logged in, redirect request to homepage
@@ -77,7 +52,7 @@ app.get('/logout', function(req, res, next) {
 });
 
 // handle login and account creation requests
-app.post('/login', function(req, res, next) {
+app.post('/', function(req, res, next) {
     //console.log(req.body.form_type);
     //console.log(req.body.login_username);
     var form_type = req.body.form_type;
@@ -106,6 +81,78 @@ app.post('/login', function(req, res, next) {
 
 });
 
+
+app.post('/create_account', function(req, res, next) {
+    var form_type = req.body.form_type;
+    var context = {};
+    var new_username = req.body.create_username;
+
+    // if correct form was submitted
+    if (form_type == "create_account_form") {
+        var sqlStr = "SELECT u.id FROM fp_user u WHERE u.username = (?)";
+        // check if username is already taken. SELECT by username
+        pool.query(sqlStr, new_username, function(err, results) {
+            if (err) {
+                console.log(err);
+                next(err);
+                return;
+            }
+            // if username exists
+            if (results[0]) {
+                context.create_error = "Username is not available";
+                res.render('login', context);
+                return;
+            }
+            // otherwise, username is available. insert account info into db
+            sqlStr = "INSERT INTO fp_user (username, password) VALUES (?, ?)";
+            var sqlArgs = [new_username, req.body.create_password];
+            pool.query(sqlStr, sqlArgs, function(err, result) {
+                if (err) {
+                    console.log(err);
+                    next(err);
+                    return;
+                }
+                // new username and password successfully inserted.
+                // add to session, redirect user to home page
+                req.session.logged_in_username = new_username;
+                req.session.logged_in_user_id = req.body.create_password;
+                res.redirect('/home');
+                return;
+            });
+        });
+    }
+    else {
+        res.send("error");
+    }
+    return;
+});
+
+
+app.get('/home', function(req, res, next) {
+    // check if the user is logged in
+    if (!req.session.logged_in_username) {
+        // if not logged in, render login page
+        res.render('login');
+    }
+    else {
+        // user is logged in	
+        getPortfolioTable(req, res);
+    }
+});
+
+app.post('/home', function(req, res, next) {
+    // check if the user is logged in
+    if (!req.session.logged_in_username) {
+        // if not logged in, render login page
+        res.render('login');
+    }
+    else {
+	    // user is logged in
+        getPortfolioTable(req, res);
+        return;
+    }
+    //}
+});
 
 function getPortfolioTable(req, res) {
     var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type " +
