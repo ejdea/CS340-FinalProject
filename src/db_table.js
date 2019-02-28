@@ -34,13 +34,26 @@ app.set('port', port);
 app.get('/home', function(req, res, next) {
     // check if the user is logged in
     if (!req.session.logged_in_username) {
+        // if not logged in, render login page
         res.render('login');
+    }
+    else {
+        var context = {};
+        context.username = req.session.logged_in_username;;
+        res.render('home', context);
     }
 })
 
 
 
 app.get('/', function(req, res, next) {
+    // if user is already logged in, redirect request to homepage
+    if (req.session.logged_in_username) {
+        res.redirect('home');
+        return;
+    }
+
+
     // Check if table already exists
     var sqlStr = "SELECT 1 FROM information_schema.tables " +
                  "WHERE table_schema = (?) AND table_name = (?)";
