@@ -48,6 +48,7 @@
 				<hr/>
 				
 				<div class="row scroll" id="portfolio-scroll">
+					{{#if pf_data}}
 					<table class="stock-table" id="portfolio-table">
 						<tr>
 							<th>Symbol</th>
@@ -59,24 +60,29 @@
 							<th>Order Type</th>
 							<hr/>
 						</tr>
+						{{#each pf_data}}
 						<tr>
 							<td> 
-								<a href="stock-detail.html">ABC</a>
+								<a href="chart.html/{{this.stock_id}}">{{this.symbol}}</a>
 							</td>
-							<td>Abc Corp</td>
-							<td>100
+							<td>{{this.name}}</td>
+							<td>{{this.quantity}}
 								<form action="#" method="POST" name="update-quantity-form" id="update-quantity-form">
 									<input type="number" name="update-quantity" id="update-quantity" min="1" placeholder="quant." required>
 									<input type="hidden" value="{{this.stock_id}}" name="update-quantity-stock">
 									<button type="submit" class="btn btn-primary btn-sm">Update</button>
 								</form>
 							</td>
-							<td>2/7/19</td>
-							<td>9.34</td>
-							<td>10.78</td>
-							<td>Market Order Buy</td>
+							<td>{{this.purchase_date}}</td>
+							<td>{{this.purchase_price}}</td>
+							<td>{{this.current_price}}</td>
+							<td>{{this.order_type}}</td>
 						</tr>
+						{{/each}}
 					</table>
+					{{else}}
+					<span>Empty Portfolio</span>
+					{{/if}}
 				</div>
 				
 				<hr/>
@@ -96,7 +102,6 @@
 						<button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
 					</form>
 				</div>
-				
 			</div>
 			
 			<div class="col-md-5 home-col" id="watchlist-col">
@@ -126,6 +131,7 @@
 				<hr/>
 				
 				<div class="row scroll align-items-center justify-content-center" id="watchlist-scroll">
+					{{#if wl_data}}
 					<table class="stock-table" id="watchlist-table">
 						<tr>
 							<th>Symbol</th>
@@ -135,26 +141,29 @@
 							<th>Time</th>
 							<th></th>
 						</tr>
+						{{#each wl_data}}
 						<tr>
-							<td> <a href="stock-detail.html">ABC</a></td>
-							<td>Abc Corp</td>
-							<td>10.78</td>
-							<td>+5%</td>
-							<td>2019-02-14 07:00</td>
+							<td>
+								<a href="#">{{this.symbol}}</a>
+							</td>
+							<td>{{this.name}}</td>
+							<td>{{this.price}}</td>
+							<td>{{this.percentage_change}}</td>
 							<td>
 								<!-- form with button to delete stock from watchlist -->
-								<form action="#" method="POST" id="delete-from-watchlist-{{stock_id}}" name="delete-from-watchlist-{{stock_id}}">
-									
-									<input type="hidden" value="{{stock_id}}" name="stock-{{stock_id}}" id="stock-{{stock_id}}" class="watchlist-delete-btn">
+								<form action="#" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
+									<input type="hidden" value="{{this.stock_id}}" name="stock-{{this.stock_id}}" class="watchlist-delete-btn">
 									<button type="submit" class="close" aria-label="Close">
 										<span aria-hidden="true">&times;</span>
 									</button>
-									
 								</form>
 							</td>
 						</tr>
-						
+						{{/each}}
 					</table>
+					{{else}}
+					<span>Empty Watchlist</span>
+					{{/if}}
 				</div>
 			</div>
 		</div>
