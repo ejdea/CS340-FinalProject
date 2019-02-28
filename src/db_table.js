@@ -1,4 +1,4 @@
-var port = 34520;
+var port = 34521; //34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -52,57 +52,52 @@ app.get('/', function(req, res, next) {
         res.redirect('home');
         return;
     }
-
-
-    // Check if table already exists
-    var sqlStr = "SELECT 1 FROM information_schema.tables " +
-                 "WHERE table_schema = (?) AND table_name = (?)";
-
-    pool.query(sqlStr, [sqlDb, 'workouts'], function(err, results) {
-        if (err) {
-            next(err);
-            return;
-        }
-    
-        if (results.length === 0) {
-            // If the table doesn't exist yet, then create it
-            var sqlStr = "CREATE TABLE workouts(" +
-                "id INT PRIMARY KEY AUTO_INCREMENT," +
-                "name VARCHAR(255) NOT NULL," +
-                "reps INT," +
-                "weight INT," +
-                "date DATE," +
-                "lbs BOOLEAN)";
-
-            pool.query(sqlStr, function(err) {
-                if (err) {
-                    next(err);
-                    return;
-                }
-                var resultErr = showTable(res);
-                if (resultErr)
-                    next(resultErr);
-            });
-        } else {
-          var resultErr = showTable(res);
-          if (resultErr)
-            next(resultErr);
-        }
-    });
+    else {
+        res.render('login');
+    }
 });
 
-function showTable(res) {
-    var sqlStr = "SELECT * FROM fp_user";
 
-    pool.query(sqlStr, function(err, data) {
-        if (err) {
-          next(err);
-          return;
-        }
 
-        res.render('login', { data : data });
-    });
-}
+app.get('/logout', function(req, res, next) {
+    req.session.logged_in_username = undefined;
+    req.session.logged_in_user_id = undefined;
+    res.render('login');
+});
+
+// handle login and account creation requests
+app.post('/login', function(req, res, next) {
+    console.log(req.body.form_type);
+    console.log(req.body.login_username);
+    var form_type = req.body.form_type;
+    var context = {};
+    if (form_type == "login_form") {
+        var sqlStr = "SELECT u.id FROM fp_user u WHERE u.username = (?) AND u.password = (?)";
+        var sqlArgs = [req.body.login_username, req.body.login_password];
+        pool.query(sqlStr, sqlArgs, function(err, results) {
+            if (err) {
+                console.log(err);
+                next(err);
+                return;
+            }
+            // check if user credentials were found
+            if (results[0]) {
+                req.session.logged_in_username = req.body.login_username;
+                req.session.logged_in_user_id = results[0].id;
+                res.redirect('home');
+                return;
+            }
+            context.login_error = "Invalid username or password";
+            res.render('login', context);
+            
+        }); 
+    }
+
+    else {
+        res.send('error');
+    }
+});
+
 
 app.post('/home', function(req, res, next) {
     res.render('home');
