@@ -11,7 +11,9 @@ var app = express();
 var handlebars = require('express-handlebars').create({defaultLayout:'main'});
 var bodyParser = require('body-parser');
 var mysql = require('mysql');
+var session = require('express-session');
 
+app.use(session({secret:'SuperSecretPassword'}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'));
 
@@ -28,6 +30,15 @@ module.exports.pool = pool;
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', port);
+
+app.get('/home', function(req, res, next) {
+    // check if the user is logged in
+    if (!req.session.logged_in_username) {
+        res.render('login');
+    }
+})
+
+
 
 app.get('/', function(req, res, next) {
     // Check if table already exists
