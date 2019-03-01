@@ -1,4 +1,4 @@
-var port = 34521; //34520
+var port = 34520; //34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -171,7 +171,7 @@ function getPortfolioTable(req, res) {
                  "  ON s.id = t1.stock_id " +
                  "WHERE u.id = (?)";
 
-    pool.query(sqlStr, [ 1 ], function(err, pf_data) {
+    pool.query(sqlStr, req.session.logged_in_user_id, function(err, pf_data) {
         if (err) {
           next(err);
           return;
@@ -231,7 +231,7 @@ function getWatchlist(req, res, pf_data) {
 		 "  ON us.user_id = u.id " +
 		 "  AND u.id = (?)";
 
-    pool.query(sqlStr, [ 1 ], function(err, wl_data) {
+    pool.query(sqlStr, req.session.logged_in_user_id, function(err, wl_data) {
         if (err) {
             console.log(err);
             next(err);
