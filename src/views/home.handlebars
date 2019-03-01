@@ -25,16 +25,19 @@
 			<div class="col-md-7 home-col" id="portfolio-col">
 				<div id="portfolio-header" class="text-left table-header">
 					<span class="table-header-title">
-						Portfolio: {{portfolio-name}}
+						Portfolio: {{portfolio_name}}
 					</span>
 					<span class="table-header-contents">
 						<!-- menu to select portfolio to view -->
 						<form action="#" method="POST" id="select-portfolio-form" name="select-portfolio-form">
 							<label for="select-portfolio-id">Select Portfolio:</label>
+							{{#if pf_list}}
 							<select onChange="this.form.submit()" name="select-portfolio-menu" id="select-portfolio-menu">
-								<!-- <option value="portfolio1_id">portfolio1</option>
-								<option value="portfolio2_id">portfolio2</option> -->
+								{{#each pf_list}}
+								<option value="portfolio1_id">{{this.name}}</option>
+								{{/each}}
 							</select>
+							{{/if}}
 						</form>
 						<!-- form to create new portfolio -->
 						<form action="#" method="POST" id="new-portfolio-form" name="new-portfolio-form">
@@ -63,7 +66,8 @@
 						{{#each pf_data}}
 						<tr>
 							<td> 
-								<a href="chart.html/{{this.stock_id}}">{{this.symbol}}</a>
+								<!--<a href="chart/{{this.stock_id}}">{{this.symbol}}</a>-->
+								<a href="#">{{this.symbol}}</a>
 							</td>
 							<td>{{this.name}}</td>
 							<td>{{this.quantity}}

@@ -147,11 +147,9 @@ app.post('/home', function(req, res, next) {
         res.render('login');
     }
     else {
-	    // user is logged in
+	// user is logged in
         getPortfolioTable(req, res);
-        return;
     }
-    //}
 });
 
 function getPortfolioTable(req, res) {
@@ -178,22 +176,40 @@ function getPortfolioTable(req, res) {
         }
 
         getWatchlist(req, res, pf_data);
-        return;
-        //res.render('home', { pf_data : pf_data });
     });
 }
-
 
 function getWatchlist(req, res, pf_data) {
     let list = {};
     list.pf_data = pf_data;
 
+    // Get current date
     var today = new Date();
     var dd = today.getDate();
     var mm = today.getMonth() + 1; // January=0
     var yyyy = today.getFullYear();
     var date = yyyy + '-' + mm + '-' + dd;
 
+    // Set username
+    list.username = req.session.logged_in_username;
+
+    // Query portfolio name
+    var sqlPortfolioName = "SELECT p.name " +
+                           "FROM fp_user u, fp_portfolio p " +
+                           "WHERE u.id = (?) " +
+                           "AND u.id = p.user_id ";
+
+    pool.query(sqlPortfolioName, req.session.logged_in_user_id, function(err, pf_name) {
+            if (err) {
+                next(err);
+                return;
+            }
+
+            list.portfolio_name = pf_name[0].name;
+            list.pf_list = pf_name;
+    });
+
+    // Query watchlist data
     var sqlStr = "SELECT s.symbol, s.name, t1.timestamp, t1.price, t2.percentage_change " +
 		 "FROM fp_stock s " +
 		 "INNER JOIN " +
@@ -233,15 +249,11 @@ function getWatchlist(req, res, pf_data) {
 
     pool.query(sqlStr, req.session.logged_in_user_id, function(err, wl_data) {
         if (err) {
-            console.log(err);
             next(err);
             return;
         }
 
         list.wl_data = wl_data;
-        list.username = req.session.logged_in_username;
-
-        //console.log(list);
 
         res.render('home', list);
     });

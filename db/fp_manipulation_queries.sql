@@ -97,6 +97,12 @@ LEFT JOIN
   ON s.id = t1.stock_id
 WHERE u.id = 1
 
+-- Get portfolio name
+SELECT p.name
+FROM fp_user u, fp_portfolio p
+WHERE u.id = :user_id_input
+AND u.id = p.user_id
+
 -- Add new user
 INSERT INTO fp_user (`username`, `password`) VALUES ( :username_input, :password_input );
 
