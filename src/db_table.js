@@ -221,7 +221,23 @@ function getWatchlist(req, res, pf_data) {
         }
 
         list.pf_list = pf_name;
-        list.selected_portfolio = req.body.portfolio;
+        if (req.body.portfolio != null) {
+	    req.session.portfolio_id = req.body.portfolio;
+        }
+        list.selected_portfolio = req.session.portfolio_id;
+    });
+
+    // Query order types
+    var sqlOrderTypes = "SELECT ot.id AS order_type_id, ot.type AS order_type_name " +
+                        "FROM fp_order_type ot ORDER BY ot.id ASC";
+
+    pool.query(sqlOrderTypes, null, function(err, ot_data) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        list.order_type_list = ot_data;
     });
 
     // Query watchlist data
@@ -278,6 +294,40 @@ app.post('/createPortfolio', function(req, res, next) {
     var sqlStr = "INSERT INTO `fp_portfolio` (`user_id`, `name`) VALUES (?, ?)";
     var sqlVar = [ req.session.logged_in_user_id,
                    req.body["new-portfolio-name"] ];
+
+    pool.query(sqlStr, sqlVar, function(err, result) {
+        if(err) {
+            next(err);
+            return;
+        }
+
+        // Send insertid back to client-side
+        res.redirect('home');
+    });
+});
+
+app.post('/submitOrder', function(req, res, next) {
+    var sqlStr = "INSERT INTO `fp_order` (`stock_id`, `portfolio_id`, `order_type_id`, `price_id`, `quantity`) " +
+                 "VALUES ( " +
+                 "    (SELECT s.id FROM fp_stock s WHERE s.symbol = (?) LIMIT 1), " +
+                 "    (?), " +
+                 "    (SELECT ot.id AS order_type_id FROM fp_order_type ot WHERE ot.id = (?)), " +
+                 "    (SELECT t1.price_id " +	
+                 "     FROM ( " +
+                 "         SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price, p.id AS price_id " +
+                 "         FROM fp_price p " +
+                 "         GROUP BY p.stock_id DESC " +
+                 "     ) t1 " +
+                 "     INNER JOIN fp_stock s " +
+                 "	  ON t1.stock_id = s.id " +
+                 "	  AND s.id = (SELECT s.id FROM fp_stock s WHERE s.symbol = (?))), " +
+                 "     (?) " +
+                 ")";
+    var sqlVar = [ req.body["new-order-symbol"],
+                   req.session.portfolio_id,
+                   req.body["new-order-type"],
+                   req.body["new-order-symbol"],
+                   req.body["new-order-quantity"] ];
 
     pool.query(sqlStr, sqlVar, function(err, result) {
         if(err) {

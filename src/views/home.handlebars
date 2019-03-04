@@ -96,16 +96,20 @@
 				
 				<div class="row portfolio-buttons">
 					<!-- form to submit new stock order -->
-					<form action="#" method="POST" id="new-order-form" name="new-order-form">
+					<form id="new-order-form" name="new-order-form" action="submitOrder" method="post">
+						<input type="hidden" value="portfolio_id" name="" />
 						<label for="new-order-symbol">Symbol:</label>
 						<input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="" maxlength="5" size="6" required>
 						<label for="new-order-quantity"># Shares:</label>	 
 						<input type="number" name="new-order-quantity" id="new-order-quantity" placeholder="" min="1" required>
 						<label for="new-order-type">Order Type</label>
+						{{#if order_type_list}}
 						<select name="new-order-type" id="new-order-type">
-							<option value="ordertype.id">Market Order Buy</option>
-							<option value="ordertype.id">Market Order Sell</option>
+							{{#each order_type_list}}
+							<option value="{{this.order_type_id}}" name="{{this.order_type_name}}">{{this.order_type_name}}</option>
+							{{/each}}
 						</select>
+						{{/if}}
 						<button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
 					</form>
 				</div>
