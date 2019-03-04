@@ -1,4 +1,4 @@
-var port = 34520; //34520
+var port = 34523; //34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -30,6 +30,13 @@ module.exports.pool = pool;
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', port);
+
+// Register handlebars helper ifeq
+const hbars = handlebars.handlebars;
+
+hbars.registerHelper('ifeq', function(arg1, arg2, options) {
+    return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+});
 
 
 app.get('/', function(req, res, next) {
@@ -153,6 +160,7 @@ app.post('/home', function(req, res, next) {
 });
 
 function getPortfolioTable(req, res) {
+    var inputParams;
     var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
@@ -169,7 +177,14 @@ function getPortfolioTable(req, res) {
                  "  ON s.id = t1.stock_id " +
                  "WHERE u.id = (?)";
 
-    pool.query(sqlStr, req.session.logged_in_user_id, function(err, pf_data) {
+    if (req.body.portfolio != null) {
+        sqlStr += " AND pf.id = (?)";
+        inputParams = [ req.session.logged_in_user_id, req.body.portfolio ];
+    } else {
+        inputParams = [ req.session.logged_in_user_id ];
+    }
+
+    pool.query(sqlStr, inputParams, function(err, pf_data) {
         if (err) {
           next(err);
           return;
@@ -194,19 +209,19 @@ function getWatchlist(req, res, pf_data) {
     list.username = req.session.logged_in_username;
 
     // Query portfolio name
-    var sqlPortfolioName = "SELECT p.name " +
+    var sqlPortfolioName = "SELECT p.id AS portfolio_id, p.name AS portfolio_name " +
                            "FROM fp_user u, fp_portfolio p " +
                            "WHERE u.id = (?) " +
-                           "AND u.id = p.user_id ";
+                           "AND u.id = p.user_id";
 
     pool.query(sqlPortfolioName, req.session.logged_in_user_id, function(err, pf_name) {
-            if (err) {
-                next(err);
-                return;
-            }
+        if (err) {
+            next(err);
+            return;
+        }
 
-            list.portfolio_name = pf_name[0].name;
-            list.pf_list = pf_name;
+        list.pf_list = pf_name;
+        list.selected_portfolio = req.body.portfolio;
     });
 
     // Query watchlist data
@@ -255,11 +270,9 @@ function getWatchlist(req, res, pf_data) {
 
         list.wl_data = wl_data;
 
-        res.render('home', list);
+        res.render('home', list);   
     });
 }
-
-
         
 app.use(function(req,res){
     res.status(404);
