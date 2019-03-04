@@ -270,10 +270,26 @@ function getWatchlist(req, res, pf_data) {
 
         list.wl_data = wl_data;
 
-        res.render('home', list);   
+        res.render('home', list);
     });
 }
-        
+
+app.post('/createPortfolio', function(req, res, next) {
+    var sqlStr = "INSERT INTO `fp_portfolio` (`user_id`, `name`) VALUES (?, ?)";
+    var sqlVar = [ req.session.logged_in_user_id,
+                   req.body["new-portfolio-name"] ];
+
+    pool.query(sqlStr, sqlVar, function(err, result) {
+        if(err) {
+            next(err);
+            return;
+        }
+
+        // Send insertid back to client-side
+        res.redirect('home');
+    });
+});
+
 app.use(function(req,res){
     res.status(404);
     res.render('404');

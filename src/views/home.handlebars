@@ -34,7 +34,7 @@
 									{{#ifeq this.portfolio_id ../../selected_portfolio }}
 										<option value="{{this.portfolio_id}}" selected>{{this.portfolio_name}}</option>
 									{{else}}
-										<option value="{{this.portfolio_id}}" name="pf_{{../../selected_portfolio}}">{{this.portfolio_name}}</option>
+										<option value="{{this.portfolio_id}}">{{this.portfolio_name}}</option>
 									{{/ifeq}}
 								{{/each}}
 							</select>
@@ -43,7 +43,7 @@
 					</span>
 					<span class="table-header-contents">
 						<!-- form to create new portfolio -->
-						<form action="#" method="POST" id="new-portfolio-form" name="new-portfolio-form">
+						<form id="new-portfolio-form" name="new-portfolio-form" action="createPortfolio" method="post">
 							<label for="new-portfolio-name" id="new-portfolio-label">New Portfolio:</label>
 							<input type="text" maxlength="15" name="new-portfolio-name" id="new-portfolio-name" placeholder="portfolio name" size="15" required>
 							<button type="submit" class="btn btn-primary btn-sm" id="new-portfolio-form-button">Create</button>
