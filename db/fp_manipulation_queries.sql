@@ -21,7 +21,7 @@ FROM fp_user u
 WHERE u.username = :username_input;
 
 -- Get user's watchlist
-SELECT s.symbol, s.name, t1.timestamp, t1.price, t2.percentage_change
+SELECT s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change
 FROM fp_stock s
 INNER JOIN
 (
@@ -30,23 +30,23 @@ INNER JOIN
 	GROUP BY p.stock_id DESC
 ) t1
   ON s.id = t1.stock_id
-INNER JOIN
+LEFT JOIN
 (
-	SELECT ((t2b.price - t2a.price) / t2a.price * 100) AS percentage_change, t2a.stock_id
+	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id
 	FROM
 	(
 		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
 		FROM fp_price p
-		WHERE p.timestamp >= concat(:date_input, ' 00:00:00')
-		AND p.timestamp <= concat(:date_input, ' 23:59:59')
+		WHERE p.timestamp >= concat(:current_date_input, ' 00:00:00')
+		AND p.timestamp <= concat(:current_date_input, ' 23:59:59')
 		GROUP BY p.stock_id ASC
 	) t2a
 	INNER JOIN
 	(
 		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
 		FROM fp_price p
-		WHERE p.timestamp >= concat(:date_input, ' 00:00:00')
-		AND p.timestamp <= concat(:date_input, ' 23:59:59')
+		WHERE p.timestamp >= concat(:current_date_input, ' 00:00:00')
+		AND p.timestamp <= concat(:current_date_input, ' 23:59:59')
 		GROUP BY p.stock_id DESC
 	) t2b
 	  ON t2a.stock_id = t2b.stock_id
@@ -56,12 +56,12 @@ INNER JOIN fp_user_stock us
   ON us.stock_id = t1.stock_id
 INNER JOIN fp_user u
   ON us.user_id = u.id
-  AND u.id = :user_id_input;
+  AND u.id = :user_id_input
   
 -- Calculate percentage change in user watchlist
 -- NOTE: This query is just a subquery in the user watchlist query.
 --       Including this to help better understand the user watchlist query.
-SELECT ((t2b.price - t2a.price) / t2a.price * 100) AS percentage_change, t2a.stock_id
+SELECT ROUND((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id
 FROM
 (
 	SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
@@ -81,7 +81,7 @@ INNER JOIN
   ON t2a.stock_id = t2b.stock_id;
   
 -- Get user's portfolio data
-SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type
+SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(t1.price, 2), 2) AS current_price, ot.type
 FROM fp_user u
 INNER JOIN fp_portfolio pf ON u.id = pf.user_id
 INNER JOIN fp_order o ON pf.id = o.portfolio_id
@@ -95,7 +95,7 @@ LEFT JOIN
 	GROUP BY p.stock_id DESC
 ) t1
   ON s.id = t1.stock_id
-WHERE u.id = 1
+WHERE u.id = :user_id_input
 
 -- Get portfolio name
 SELECT p.name

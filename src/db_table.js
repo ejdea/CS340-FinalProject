@@ -176,7 +176,7 @@ app.post('/home', function(req, res, next) {
 
 function getPortfolioTable(req, res) {
     var inputParams;
-    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type, o.id AS order_id " +
+    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(t1.price, 2), 2) AS current_price, ot.type AS order_type, o.id AS order_id " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
                  "INNER JOIN fp_order o ON pf.id = o.portfolio_id " +
@@ -249,7 +249,7 @@ function getWatchlist(req, res, pf_data) {
     });
 
     // Query watchlist data
-    var sqlStr = "SELECT s.symbol, s.name, t1.timestamp, t1.price, t2.percentage_change " +
+    var sqlStr = "SELECT s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
 		 "FROM fp_stock s " +
 		 "INNER JOIN " +
 		 "( " +
@@ -258,23 +258,23 @@ function getWatchlist(req, res, pf_data) {
 		 "	GROUP BY p.stock_id DESC " +
 		 ") t1 " +
 		 "  ON s.id = t1.stock_id " +
-		 "INNER JOIN " +
+		 "LEFT JOIN " +
 		 "( " +
-		 "	SELECT ((t2b.price - t2a.price) / t2a.price * 100) AS percentage_change, t2a.stock_id " +
+		 "	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id " +
 		 "	FROM " +
 		 "	( " +
 		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
 		 "		FROM fp_price p " +
-		 "		WHERE p.timestamp >= concat(" + date + ", ' 00:00:00') " +
-		 "		AND p.timestamp <= concat(" + date + ", ' 23:59:59') " +
+		 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+		 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
 		 "		GROUP BY p.stock_id ASC " +
 		 "	) t2a " +
 		 "	INNER JOIN " +
 		 "	( " +
 		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
 		 "		FROM fp_price p " +
-		 "		WHERE p.timestamp >= concat(" + date + ", ' 00:00:00') " +
-		 "		AND p.timestamp <= concat(" + date + ", ' 23:59:59') " +
+		 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+		 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
 		 "		GROUP BY p.stock_id DESC " +
 		 "	) t2b " +
 		 "	  ON t2a.stock_id = t2b.stock_id " +
@@ -286,13 +286,20 @@ function getWatchlist(req, res, pf_data) {
 		 "  ON us.user_id = u.id " +
 		 "  AND u.id = (?)";
 
-    pool.query(sqlStr, req.session.logged_in_user_id, function(err, wl_data) {
+    var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
+
+    pool.query(sqlStr, sqlParams, function(err, wl_data) {
         if (err) {
             next(err);
             return;
         }
 
-        list.wl_data = wl_data;
+        // Check if query returned an empty dataset
+        if (wl_data.length > 0) {
+            if (wl_data) {
+                list.wl_data = wl_data;
+            }
+        }
 
         res.render('home', list);
     });
