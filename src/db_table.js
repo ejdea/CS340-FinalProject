@@ -43,7 +43,6 @@ app.get('/', function(req, res, next) {
     // if user is already logged in, redirect request to homepage
     if (req.session.logged_in_username) {
         res.redirect('home');
-        return;
     }
     else {
         res.render('login');
@@ -56,33 +55,36 @@ app.get('/logout', function(req, res, next) {
     req.session.logged_in_username = undefined;
     req.session.logged_in_user_id = undefined;
     res.render('login');
+    return;
 });
 
 // handle login and account creation requests
 app.post('/', function(req, res, next) {
-    //console.log(req.body.form_type);
-    //console.log(req.body.login_username);
     var form_type = req.body.form_type;
     var context = {};
+
     if (form_type == "login_form") {
         var sqlStr = "SELECT u.id FROM fp_user u WHERE u.username = (?) AND u.password = (?)";
         var sqlArgs = [req.body.login_username, req.body.login_password];
+
         pool.query(sqlStr, sqlArgs, function(err, results) {
             if (err) {
                 console.log(err);
                 next(err);
                 return;
             }
+
             // check if user credentials were found
             if (results[0]) {
                 req.session.logged_in_username = req.body.login_username;
                 req.session.logged_in_user_id = results[0].id;
+                req.session.portfolio_id = 1;
                 res.redirect('home');
                 return;
             }
+
             context.login_error = "Invalid username or password";
-            res.render('login', context);
-            
+            res.render('login', context);            
         }); 
     }
 
@@ -97,6 +99,7 @@ app.post('/create_account', function(req, res, next) {
     // if correct form was submitted
     if (form_type == "create_account_form") {
         var sqlStr = "SELECT u.id FROM fp_user u WHERE u.username = (?)";
+
         // check if username is already taken. SELECT by username
         pool.query(sqlStr, new_username, function(err, results) {
             if (err) {
@@ -104,21 +107,25 @@ app.post('/create_account', function(req, res, next) {
                 next(err);
                 return;
             }
+
             // if username exists
             if (results[0]) {
                 context.create_error = "Username is not available";
                 res.render('login', context);
                 return;
             }
+
             // otherwise, username is available. insert account info into db
             sqlStr = "INSERT INTO fp_user (username, password) VALUES (?, ?)";
             var sqlArgs = [new_username, req.body.create_password];
+
             pool.query(sqlStr, sqlArgs, function(err, result) {
                 if (err) {
                     console.log(err);
                     next(err);
                     return;
                 }
+
                 // new username and password successfully inserted.
                 // add to session, redirect user to home page
                 req.session.logged_in_username = new_username;
@@ -136,6 +143,10 @@ app.post('/create_account', function(req, res, next) {
 
 
 app.get('/home', function(req, res, next) {
+    if (req.body.portfolio != null) {
+        req.session.portfolio_id = req.body.portfolio;
+    }
+
     // check if the user is logged in
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
@@ -148,6 +159,10 @@ app.get('/home', function(req, res, next) {
 });
 
 app.post('/home', function(req, res, next) {
+    if (req.body.portfolio != null) {
+        req.session.portfolio_id = req.body.portfolio;
+    }
+
     // check if the user is logged in
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
@@ -175,14 +190,10 @@ function getPortfolioTable(req, res) {
                  "	GROUP BY p.stock_id DESC " +
                  ") t1 " +
                  "  ON s.id = t1.stock_id " +
-                 "WHERE u.id = (?)";
-
-    if (req.body.portfolio != null) {
-        sqlStr += " AND pf.id = (?)";
-        inputParams = [ req.session.logged_in_user_id, req.body.portfolio ];
-    } else {
-        inputParams = [ req.session.logged_in_user_id ];
-    }
+                 "WHERE u.id = (?)" +
+                 "AND pf.id = (?)";
+    console.log('req.session.portfolio_id=' + req.session.portfolio_id);
+    inputParams = [ req.session.logged_in_user_id, req.session.portfolio_id ];
 
     pool.query(sqlStr, inputParams, function(err, pf_data) {
         if (err) {
@@ -221,9 +232,6 @@ function getWatchlist(req, res, pf_data) {
         }
 
         list.pf_list = pf_name;
-        if (req.body.portfolio != null) {
-	    req.session.portfolio_id = req.body.portfolio;
-        }
         list.selected_portfolio = req.session.portfolio_id;
     });
 
