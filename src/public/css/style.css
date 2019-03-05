@@ -229,6 +229,10 @@ th, td {
 	float: right;
 }
 
+#update-quantity {
+	width: 70px;
+}
+
 /*****************************
         Whole Website
 *****************************/

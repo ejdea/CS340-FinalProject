@@ -176,7 +176,7 @@ app.post('/home', function(req, res, next) {
 
 function getPortfolioTable(req, res) {
     var inputParams;
-    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type " +
+    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, p.price AS purchase_price, t1.price AS current_price, ot.type AS order_type, o.id AS order_id " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
                  "INNER JOIN fp_order o ON pf.id = o.portfolio_id " +
@@ -192,7 +192,7 @@ function getPortfolioTable(req, res) {
                  "  ON s.id = t1.stock_id " +
                  "WHERE u.id = (?)" +
                  "AND pf.id = (?)";
-    console.log('req.session.portfolio_id=' + req.session.portfolio_id);
+
     inputParams = [ req.session.logged_in_user_id, req.session.portfolio_id ];
 
     pool.query(sqlStr, inputParams, function(err, pf_data) {
@@ -336,6 +336,22 @@ app.post('/submitOrder', function(req, res, next) {
                    req.body["new-order-type"],
                    req.body["new-order-symbol"],
                    req.body["new-order-quantity"] ];
+
+    pool.query(sqlStr, sqlVar, function(err, result) {
+        if(err) {
+            next(err);
+            return;
+        }
+
+        // Send insertid back to client-side
+        res.redirect('home');
+    });
+});
+
+app.post('/updateQuantity', function(req, res, next) {
+    var sqlStr = "UPDATE `fp_order` o SET `quantity`=(?) WHERE o.id = (?)";
+    var sqlVar = [ req.body["update-quantity"],
+                   req.body["update-quantity-order-id"] ];
 
     pool.query(sqlStr, sqlVar, function(err, result) {
         if(err) {

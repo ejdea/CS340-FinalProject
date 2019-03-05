@@ -45,7 +45,7 @@
 						<!-- form to create new portfolio -->
 						<form id="new-portfolio-form" name="new-portfolio-form" action="createPortfolio" method="post">
 							<label for="new-portfolio-name" id="new-portfolio-label">New Portfolio:</label>
-							<input type="text" maxlength="15" name="new-portfolio-name" id="new-portfolio-name" placeholder="portfolio name" size="15" required>
+							<input type="text" maxlength="15" name="new-portfolio-name" id="new-portfolio-name" placeholder="Portfolio Name" size="15" required>
 							<button type="submit" class="btn btn-primary btn-sm" id="new-portfolio-form-button">Create</button>
 						</form>
 					</span>
@@ -74,9 +74,9 @@
 							</td>
 							<td>{{this.name}}</td>
 							<td>{{this.quantity}}
-								<form action="#" method="POST" name="update-quantity-form" id="update-quantity-form">
-									<input type="number" name="update-quantity" id="update-quantity" min="1" placeholder="quant." required>
-									<input type="hidden" value="{{this.stock_id}}" name="update-quantity-stock">
+								<form name="update-quantity-form" id="update-quantity-form" action="updateQuantity" method="post">
+									<input type="number" name="update-quantity" id="update-quantity" min="1" placeholder="Quantity" required>
+									<input type="hidden" value="{{this.order_id}}" name="update-quantity-order-id">
 									<button type="submit" class="btn btn-primary btn-sm">Update</button>
 								</form>
 							</td>
