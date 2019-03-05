@@ -21,10 +21,10 @@
 
 .navbar {
 	top: 0;
-    border: none;
+	border: none;
 	margin: 0;
 	padding: 0;
-    background: #485167;
+	background: #485167;
 	display: flex;
 	justify-content: center;
 }
@@ -204,6 +204,7 @@ th, td {
 	padding: 1px 5px 1px 5px;
 	color: #333333;
 	height: 33px;
+	overflow: auto;
 }
 
 .table-header form {
@@ -226,6 +227,10 @@ th, td {
 #new-order-form {
 	display: inline;
 	float: right;
+}
+
+#update-quantity {
+	width: 70px;
 }
 
 /*****************************
