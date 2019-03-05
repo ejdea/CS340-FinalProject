@@ -249,7 +249,7 @@ function getWatchlist(req, res, pf_data) {
     });
 
     // Query watchlist data
-    var sqlStr = "SELECT s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
+    var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
 		 "FROM fp_stock s " +
 		 "INNER JOIN " +
 		 "( " +
@@ -324,7 +324,7 @@ app.post('/createPortfolio', function(req, res, next) {
 app.post('/submitOrder', function(req, res, next) {
     var sqlStr = "INSERT INTO `fp_order` (`stock_id`, `portfolio_id`, `order_type_id`, `price_id`, `quantity`) " +
                  "VALUES ( " +
-                 "    (SELECT s.id FROM fp_stock s WHERE s.symbol = (?) LIMIT 1), " +
+                 "    (SELECT s.id FROM fp_stock s WHERE s.symbol = (?)), " +
                  "    (?), " +
                  "    (SELECT ot.id AS order_type_id FROM fp_order_type ot WHERE ot.id = (?)), " +
                  "    (SELECT t1.price_id " +	
@@ -361,7 +361,80 @@ app.post('/updateQuantity', function(req, res, next) {
                    req.body["update-quantity-order-id"] ];
 
     pool.query(sqlStr, sqlVar, function(err, result) {
-        if(err) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        // Send insertid back to client-side
+        res.redirect('home');
+    });
+});
+
+app.post('/addStock', function(req, res, next) {
+    var stockId = null;
+
+    // Check if stock exists in database
+    var sqlStock = "SELECT id FROM fp_stock s WHERE s.symbol = (?)";
+
+    var sqlStockParams = [ req.body["new-watchlist-stock"] ];
+
+    pool.query(sqlStock, sqlStockParams, function(err, res) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        if (res.length > 0) {
+            stockId = res[0].id;
+        } else {
+            var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
+                                 "VALUES ( " +
+                                 "	:symbol_input, " +
+                                 "	:name_input, " +
+                                 "	(SELECT id FROM fp_sector sctr WHERE sctr.name = :sector_name_input LIMIT 1) " +
+                                 ")";
+            var sqlInsertStockParams = [ req.body["new-watchlist-stock"],
+                                         null,
+                                         1 ];
+
+            pool.query(sqlStock, sqlStockParams, function(err, res) {
+                if (err) {
+                    next(err);
+                    return;
+                }
+            });
+        }
+    });
+
+    // Add stock to watchlist
+    var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) " +
+                 "VALUES ( " +
+                 "    (?), " +
+                 "    (SELECT id FROM fp_stock s WHERE s.symbol = (?)) " +
+                 ")";
+    var sqlVar = [ req.session.logged_in_user_id,
+                   stockId ];
+
+    pool.query(sqlStr, sqlVar, function(err, result) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        // Send insertid back to client-side
+        res.redirect('home');
+    });
+});
+
+app.post('/deleteStock', function(req, res, next) {
+    console.log('req.session.logged_in_user_id=' + req.session.logged_in_user_id + ' / req.body["delete-stock-id"]=' + req.body["delete-stock-id"]);
+    var sqlStr = "DELETE FROM `fp_user_stock` WHERE user_id = (?) AND stock_id = (?)";
+    var sqlVar = [ req.session.logged_in_user_id,
+                   req.body["delete-stock-id"] ];
+
+    pool.query(sqlStr, sqlVar, function(err, result) {
+        if (err) {
             next(err);
             return;
         }

@@ -122,11 +122,9 @@
 					</span>
 					<span class="table-header-contents">
 						<!-- form to add new stock to watchlist -->
-						<form action="#" method="POST" id="add-watchlist-form" name="add-watchlist-form">
-							
-							<label for="new-watchlist-stock">Add a Stock:</label>
-							<input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="symbol">
-							
+						<form id="add-watchlist-form" name="add-watchlist-form" action="addStock" method="post">
+							<label for="new-watchlist-stock">Add Stock:</label>
+							<input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="Symbol">
 							<button type="submit" class="btn btn-primary btn-sm">Add</button>
 						</form>
 						<form action="#" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
@@ -162,8 +160,8 @@
 							<td>{{this.percentage_change}}</td>
 							<td>
 								<!-- form with button to delete stock from watchlist -->
-								<form action="#" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
-									<input type="hidden" value="{{this.stock_id}}" name="stock-{{this.stock_id}}" class="watchlist-delete-btn">
+								<form action="deleteStock" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
+									<input type="hidden" value="{{this.stock_id}}" name="delete-stock-id" class="watchlist-delete-btn">
 									<button type="submit" class="close" aria-label="Close">
 										<span aria-hidden="true">&times;</span>
 									</button>
