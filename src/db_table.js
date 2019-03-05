@@ -375,60 +375,80 @@ app.post('/addStock', function(req, res, next) {
     var stockId = null;
 
     // Check if stock exists in database
-    var sqlStock = "SELECT id FROM fp_stock s WHERE s.symbol = (?)";
-
+    var sqlStock = "SELECT s.id as stock_id FROM fp_stock s WHERE s.symbol = (?)";
     var sqlStockParams = [ req.body["new-watchlist-stock"] ];
 
-    pool.query(sqlStock, sqlStockParams, function(err, res) {
+    pool.query(sqlStock, sqlStockParams, function(err, result) {
         if (err) {
             next(err);
             return;
         }
 
-        if (res.length > 0) {
-            stockId = res[0].id;
-        } else {
-            var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
-                                 "VALUES ( " +
-                                 "	:symbol_input, " +
-                                 "	:name_input, " +
-                                 "	(SELECT id FROM fp_sector sctr WHERE sctr.name = :sector_name_input LIMIT 1) " +
-                                 ")";
-            var sqlInsertStockParams = [ req.body["new-watchlist-stock"],
-                                         null,
-                                         1 ];
+        if (result.length > 0) {
+            stockId = result[0].stock_id;
 
-            pool.query(sqlStock, sqlStockParams, function(err, res) {
+            // Add stock to watchlist
+            var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
+            var sqlVar = [ req.session.logged_in_user_id,
+                           stockId ];
+
+            pool.query(sqlStr, sqlVar, function(err, result) {
                 if (err) {
                     next(err);
                     return;
                 }
+
+                // Send insertid back to client-side
+                res.redirect('home');
+            });
+        } else {
+            // Insert new stock to fp_stock table
+            var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
+                                 "VALUES ( " +
+                                 "	(?), " +
+                                 "	(?), " +
+                                 "	(SELECT sctr.id FROM fp_sector sctr WHERE sctr.name = (?)) " +
+                                 ")";
+            var sqlInsertStockParams = [ req.body["new-watchlist-stock"],
+                                         'Apple',
+                                         'Technology' ];
+
+            pool.query(sqlInsertStock , sqlInsertStockParams, function(err, result) {
+                if (err) {
+                    next(err);
+                    return;
+                }
+
+                if (result.insertId != null) {
+                    stockId = result.insertId;
+
+                    // Query latest price for this stock from API
+                    // https://www.alphavantage.co/documentation/
+                    // WIP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                    // Add stock to watchlist
+                    var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
+                    var sqlVar = [ req.session.logged_in_user_id,
+                                   stockId ];
+
+                    pool.query(sqlStr, sqlVar, function(err, result) {
+                        if (err) {
+                            next(err);
+                            return;
+                        }
+
+                        // Send insertid back to client-side
+                        res.redirect('home');
+                    });
+                } else {
+                    console.log('Error: Failed to add stock ' + req.body["new-watchlist-stock"] + ' to watchlist.');
+                }
             });
         }
-    });
-
-    // Add stock to watchlist
-    var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) " +
-                 "VALUES ( " +
-                 "    (?), " +
-                 "    (SELECT id FROM fp_stock s WHERE s.symbol = (?)) " +
-                 ")";
-    var sqlVar = [ req.session.logged_in_user_id,
-                   stockId ];
-
-    pool.query(sqlStr, sqlVar, function(err, result) {
-        if (err) {
-            next(err);
-            return;
-        }
-
-        // Send insertid back to client-side
-        res.redirect('home');
     });
 });
 
 app.post('/deleteStock', function(req, res, next) {
-    console.log('req.session.logged_in_user_id=' + req.session.logged_in_user_id + ' / req.body["delete-stock-id"]=' + req.body["delete-stock-id"]);
     var sqlStr = "DELETE FROM `fp_user_stock` WHERE user_id = (?) AND stock_id = (?)";
     var sqlVar = [ req.session.logged_in_user_id,
                    req.body["delete-stock-id"] ];
