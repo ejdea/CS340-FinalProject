@@ -1,4 +1,4 @@
-var port = 34521; //34520
+var port = 34522; //34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -79,13 +79,27 @@ app.post('/', function(req, res, next) {
             if (results[0]) {
                 req.session.logged_in_username = req.body.login_username;
                 req.session.logged_in_user_id = results[0].id;
-                req.session.portfolio_id = 1;
-                res.redirect('home');
-                return;
-            }
+                
+                // get id of user's first portfolio
 
-            context.login_error = "Invalid username or password";
-            res.render('login', context);            
+                sqlStr = "SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id=(?)";
+                pool.query(sqlStr, req.session.logged_in_user_id, function(err, results) {
+                    if (err) {
+                        console.log(err);
+                        next(err);
+                        return;
+                    }
+                    
+                    req.session.portfolio_id = results[0].first_portfolio;
+                
+                    res.redirect('home');
+                    return;
+                });
+            }
+            else {
+                context.login_error = "Invalid username or password";
+                res.render('login', context);
+            }
         }); 
     }
 
@@ -249,6 +263,16 @@ function getWatchlist(req, res, pf_data) {
         list.order_type_list = ot_data;
     });
 
+    var sqlSectors = "SELECT id, name FROM fp_sector";
+
+    pool.query(sqlSectors, function(err, sector_names) {
+        if (err) {
+            next(err);
+            return;
+        }
+        list.sector_names = sector_names;
+    });
+
     // Query watchlist data
     var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
 		 "FROM fp_stock s " +
@@ -285,7 +309,8 @@ function getWatchlist(req, res, pf_data) {
 		 "  ON us.stock_id = t1.stock_id " +
 		 "INNER JOIN fp_user u " +
 		 "  ON us.user_id = u.id " +
-		 "  AND u.id = (?)";
+		 "  AND u.id = (?)"
+         ;
 
     var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
 
@@ -316,6 +341,8 @@ app.post('/createPortfolio', function(req, res, next) {
             next(err);
             return;
         }
+
+        req.session.portfolio_id = result.insertId;
 
         // Send insertid back to client-side
         res.redirect('home');

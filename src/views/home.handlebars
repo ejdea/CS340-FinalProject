@@ -27,8 +27,8 @@
 					<span class="table-header-title">
 						Portfolio: 
 						<!-- menu to select portfolio to view -->
+						{{#if pf_list}}
 						<form id="select-portfolio-form" name="select-portfolio-form" action="home" method="post">
-							{{#if pf_list}}
 							<select onChange="this.form.submit()" name="portfolio" id="portfolio">
 								{{#each pf_list}}
 									{{#ifeq this.portfolio_id ../../selected_portfolio }}
@@ -38,8 +38,10 @@
 									{{/ifeq}}
 								{{/each}}
 							</select>
-							{{/if}}
 						</form>
+                        {{else}}
+                        <p>None</p>
+						{{/if}}
 					</span>
 					<span class="table-header-contents">
 						<!-- form to create new portfolio -->
@@ -130,8 +132,10 @@
 						<form action="#" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
 							<label for="filter-watchlist-menu">Filter by Sector:</label>
 							<select onChange="this.form.submit()" name="filter-watchlist-menu" id="filter-watchlist-menu">
-								<option value="all">All</option>
-								<option value="sector1.id">sector1</option>
+								<option value="0">All</option>
+                                {{#each sector_names}}
+								<option value="{{this.id}}">{{this.name}}</option>
+                                {{/each}}
 							</select>
 						</form>
 					</span>
