@@ -152,6 +152,12 @@ VALUES (
     :quantity_input
 )
 
+-- Check if stock has already been added to the watchlist
+SELECT IF(COUNT(us.stock_id) > 0, 1, 0) AS isStockInWatchlist 
+FROM fp_user_stock 
+WHERE us.stock_id = :stock_id_input 
+AND us.user_id = :user_id_input
+
 -- Delete stock from user watchlist (M-to-M relationship deletion)
 DELETE FROM `fp_user_stock` WHERE user_id = :user_id_input AND stock_id = :stock_id_input;
 

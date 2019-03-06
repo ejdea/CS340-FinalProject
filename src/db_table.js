@@ -1,4 +1,4 @@
-var port = 34523; //34520
+var port = 34521; //34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -30,6 +30,7 @@ module.exports.pool = pool;
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', port);
+const request = require('request');
 
 // Register handlebars helper ifeq
 const hbars = handlebars.handlebars;
@@ -371,6 +372,25 @@ app.post('/updateQuantity', function(req, res, next) {
     });
 });
 
+function queryStockData(symbol) {
+    var apiUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY";
+    var apiKey = "apikey=JENVZ7MHDQIFBTBE";
+    var apiString = apiUrl + '&interval=60min&symbol=' + symbol + '&' + apiKey;
+
+    console.log('apiString=' + apiString);
+
+    request(apiString, { json: true }, (err, res, body) => {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        console.log('body=' + JSON.stringify(body));
+        console.log('url=' + body.url);
+        console.log('exp=' + body.explanation);
+    });
+}
+
 app.post('/addStock', function(req, res, next) {
     var stockId = null;
 
@@ -387,10 +407,12 @@ app.post('/addStock', function(req, res, next) {
         if (result.length > 0) {
             stockId = result[0].stock_id;
 
-            // Add stock to watchlist
-            var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
-            var sqlVar = [ req.session.logged_in_user_id,
-                           stockId ];
+            // Check if stock has already been added to the watchlist
+            var sqlStr = "SELECT IF(COUNT(us.stock_id) > 0, 1, 0) AS isStockInWatchlist " +
+                         "FROM fp_user_stock us " +
+                         "WHERE us.stock_id = (?) AND us.user_id = (?)";
+            var sqlVar = [ stockId,
+                           req.session.logged_in_user_id ];
 
             pool.query(sqlStr, sqlVar, function(err, result) {
                 if (err) {
@@ -398,10 +420,33 @@ app.post('/addStock', function(req, res, next) {
                     return;
                 }
 
-                // Send insertid back to client-side
-                res.redirect('home');
+                // If the stock is not in the watchlist yet
+                if(result[0].isStockInWatchlist == 0) {
+                    // Add stock to watchlist
+                    var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
+                    var sqlVar = [ req.session.logged_in_user_id,
+                                   stockId ];
+
+                    pool.query(sqlStr, sqlVar, function(err, result) {
+                        if (err) {
+                            next(err);
+                            return;
+                        }
+
+                        // Send insertid back to client-side
+                        res.redirect('home');
+                    });
+                } else {
+                    console.log('Warning: Stock has already been added to the user watchlist.');
+                    // Don't add the stock and report error msg
+                }
             });
         } else {
+            // Query latest price for this stock from API
+            var stockData = queryStockData(req.body["new-watchlist-stock"]);
+            
+            return;
+
             // Insert new stock to fp_stock table
             var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
                                  "VALUES ( " +
@@ -421,10 +466,6 @@ app.post('/addStock', function(req, res, next) {
 
                 if (result.insertId != null) {
                     stockId = result.insertId;
-
-                    // Query latest price for this stock from API
-                    // https://www.alphavantage.co/documentation/
-                    // WIP !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                     // Add stock to watchlist
                     var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
