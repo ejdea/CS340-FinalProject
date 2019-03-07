@@ -415,8 +415,30 @@ function queryStockData(symbol) {
         console.log('body=' + JSON.stringify(body));
         console.log('url=' + body.url);
         console.log('exp=' + body.explanation);
+        return;
     });
 }
+
+function getStockProfile(symbol) {
+        
+        var apiUrl = "https://financialmodelingprep.com/public/api/company/profile/" + symbol;
+        
+        request({url: apiUrl, json: true, headers: { 'Content-Type': 'application/json' }}, (err, res, body) => {
+            if (err) {
+                next(err);
+                return;
+            }
+            console.log(body);
+            var result = JSON.parse(body.substr(5).slice(0,-5));
+            var profile = {};
+            profile.companyName = result[symbol].companyName;
+            profile.sector = result[symbol].sector;
+            console.log(profile);
+            return;
+        
+        }); 
+        ;
+    }
 
 app.post('/addStock', function(req, res, next) {
     var stockId = null;
@@ -471,16 +493,24 @@ app.post('/addStock', function(req, res, next) {
         } else {
             // Query latest price for this stock from API
             var stockData = queryStockData(req.body["new-watchlist-stock"]);
+           
+            // testing API call function
+            var profile = getStockProfile("GOOG");
             
             return;
 
             // Insert new stock to fp_stock table
+            
+            
             var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
                                  "VALUES ( " +
                                  "	(?), " +
                                  "	(?), " +
                                  "	(SELECT sctr.id FROM fp_sector sctr WHERE sctr.name = (?)) " +
                                  ")";
+
+            
+
             var sqlInsertStockParams = [ req.body["new-watchlist-stock"],
                                          'Apple',
                                          'Technology' ];
