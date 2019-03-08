@@ -1,4 +1,4 @@
-var port = 34522; //34520
+var port = 34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -24,6 +24,12 @@ var pool = mysql.createPool({
   password: sqlPassword,
   database: sqlDb
 });
+
+// Set web server port
+const args = process.argv;
+if (args != null && args.length == 3) {
+    port = args[2];
+}
 
 module.exports.pool = pool;
 
