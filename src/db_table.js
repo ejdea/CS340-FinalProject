@@ -416,12 +416,15 @@ app.post('/updateQuantity', function(req, res, next) {
     });
 });
 
-function queryStockData(symbol) {
-    var apiUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY";
-    var apiKey = "apikey=JENVZ7MHDQIFBTBE";
-    var apiString = apiUrl + '&interval=60min&symbol=' + symbol + '&' + apiKey;
+function queryStockPrice(symbol) {
+    // Query 60min stock price data
+    //var apiUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY";
+    //var apiString = apiUrl + '&interval=60min&symbol=' + symbol + '&' + apiKey;
 
-    console.log('apiString=' + apiString);
+    // Query daily stock price data
+    var apiUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY";
+    var apiKey = "apikey=JENVZ7MHDQIFBTBE";
+    var apiString = apiUrl + '&symbol=' + symbol + '&' + apiKey;
 
     request(apiString, { json: true }, (err, res, body) => {
         if (err) {
@@ -429,10 +432,42 @@ function queryStockData(symbol) {
             return;
         }
 
-        console.log('body=' + JSON.stringify(body));
-        console.log('url=' + body.url);
-        console.log('exp=' + body.explanation);
-        return;
+        if (body == null || body.length == 0) {
+            res.end();
+            return;
+        }
+
+        var time_series = body['Time Series (Daily)'];
+
+        for (var date in time_series) {
+            var price = time_series[date]['4. close'];
+
+            // Check if db already has this date's price data for this stock
+            var sqlStr = "SELECT FROM WHERE (?)";
+            var sqlArg = "[  ]";
+
+            pool.query(sqlStr, sqlArg, function(err, result) {
+                if (err) {
+                    next(err);
+                    return;
+                }
+
+                // If this date's price data is not in the db, then add it.
+                if (result.length == 0) {
+                    sqlStr = "INSERT INTO fp_price () VALUES ()";
+                    sqlArg = "[  ]";
+
+                    pool.query(sqlStr, sqlArg, function(err, result) {
+                        if (err) {
+                            next(err);
+                            return;
+                        }
+
+                        res.end();
+                    }
+                }
+            }
+        }
     });
 }
 
@@ -463,7 +498,7 @@ app.post('/addStock', function(req, res, next) {
 
     // Validate input
     if (!regexStockSymbol.test(req.body["new-watchlist-stock"])) {
-        alert("Error: Invalid stock symbol input.");
+        console.log("Error: Invalid stock symbol input.");
         res.end();
         return;
     }
@@ -517,10 +552,10 @@ app.post('/addStock', function(req, res, next) {
             });
         } else {
             // Query latest price for this stock from API
-            var stockData = queryStockData(req.body["new-watchlist-stock"]);
+            var stockData = queryStockPrice(req.body["new-watchlist-stock"]);
            
             // testing API call function
-            var profile = getStockProfile(req.body["new-watchlist-stock"]);
+            //var profile = getStockProfile(req.body["new-watchlist-stock"]);
             
             return;
 

@@ -195,10 +195,6 @@ th, td {
 	padding: 10px;
 }
 
-#select-portfolio-form {
-		vertical-align: middle;
-}
-
 .table-header {
 	background-color: #eeeeee;
 	padding: 1px 5px 1px 5px;
@@ -214,6 +210,9 @@ th, td {
 .table-header-title {
 	font-weight: bolder;
 	float: left;
+	height: 100%;
+	vertical-align: middle;
+	padding-top: 3px;
 }
 
 .table-header-contents {
