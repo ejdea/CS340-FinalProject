@@ -423,7 +423,7 @@ function getStockProfile(symbol) {
         
         var apiUrl = "https://financialmodelingprep.com/public/api/company/profile/" + symbol;
         
-        request({url: apiUrl, json: true, headers: { 'Content-Type': 'application/json' }}, (err, res, body) => {
+        request({url: apiUrl, json: true}, (err, res, body) => {
             if (err) {
                 next(err);
                 return;
@@ -496,7 +496,7 @@ app.post('/addStock', function(req, res, next) {
            
             // testing API call function
             var profile = getStockProfile("GOOG");
-            
+
             return;
 
             // Insert new stock to fp_stock table
