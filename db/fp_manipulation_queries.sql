@@ -20,6 +20,12 @@ SELECT u.id
 FROM fp_user u
 WHERE u.username = :username_input;
 
+
+
+-- select id of user's first portfolio
+SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id = :user_id
+
+
 -- Get user's watchlist
 SELECT s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change
 FROM fp_stock s
@@ -57,6 +63,9 @@ INNER JOIN fp_user_stock us
 INNER JOIN fp_user u
   ON us.user_id = u.id
   AND u.id = :user_id_input
+-- the following is added when the user chooses to filter watchlist
+WHERE s.sector_id = :filter_sector
+
   
 -- Calculate percentage change in user watchlist
 -- NOTE: This query is just a subquery in the user watchlist query.
