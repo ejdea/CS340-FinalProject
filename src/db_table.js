@@ -326,9 +326,6 @@ function getWatchlist(req, res, pf_data) {
         // add sector id to param list
         sqlParams.push(parseInt(req.session.filter_sector));
         list.filter_sector = req.session.filter_sector;
-        //console.log(sqlStr);
-        console.log(sqlParams);
-        console.log(list.filter_sector);
     }
 
     pool.query(sqlStr, sqlParams, function(err, wl_data) {
@@ -464,9 +461,9 @@ function queryStockPrice(symbol) {
                         }
 
                         res.end();
-                    }
+                    });
                 }
-            }
+            });
         }
     });
 }
