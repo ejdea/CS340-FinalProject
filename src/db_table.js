@@ -79,7 +79,7 @@ app.post('/', function(req, res, next) {
             if (results[0]) {
                 req.session.logged_in_username = req.body.login_username;
                 req.session.logged_in_user_id = results[0].id;
-                
+                req.session.filter_sector = 0;
                 // get id of user's first portfolio
 
                 sqlStr = "SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id=(?)";
@@ -145,6 +145,7 @@ app.post('/create_account', function(req, res, next) {
                 // add to session, redirect user to home page
                 req.session.logged_in_username = new_username;
                 req.session.logged_in_user_id = req.body.create_password;
+                req.session.filter_sector = 0;
                 res.redirect('/home');
                 return;
             });
@@ -178,6 +179,9 @@ app.post('/home', function(req, res, next) {
         req.session.portfolio_id = req.body.portfolio;
     }
 
+    if (req.body.filter_sector) {
+        req.session.filter_sector = req.body.filter_sector;
+    }
     // check if the user is logged in
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
@@ -309,10 +313,23 @@ function getWatchlist(req, res, pf_data) {
 		 "  ON us.stock_id = t1.stock_id " +
 		 "INNER JOIN fp_user u " +
 		 "  ON us.user_id = u.id " +
-		 "  AND u.id = (?)"
-         ;
+		 "  AND u.id = (?)";
+
+
+                 
 
     var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
+
+    if (req.session.filter_sector > 0) {
+        // add wehere statement to filter by sector id
+        sqlStr = sqlStr + " WHERE s.sector_id = (?)";
+        // add sector id to param list
+        sqlParams.push(parseInt(req.session.filter_sector));
+        list.filter_sector = req.session.filter_sector;
+        //console.log(sqlStr);
+        console.log(sqlParams);
+        console.log(list.filter_sector);
+    }
 
     pool.query(sqlStr, sqlParams, function(err, wl_data) {
         if (err) {
