@@ -420,7 +420,6 @@ function queryStockData(symbol) {
 }
 
 function getStockProfile(symbol) {
-        
         var apiUrl = "https://financialmodelingprep.com/public/api/company/profile/" + symbol;
         
         request({url: apiUrl, json: true}, (err, res, body) => {
@@ -428,20 +427,29 @@ function getStockProfile(symbol) {
                 next(err);
                 return;
             }
+
             console.log(body);
             var result = JSON.parse(body.substr(5).slice(0,-5));
             var profile = {};
             profile.companyName = result[symbol].companyName;
             profile.sector = result[symbol].sector;
             console.log(profile);
-            return;
-        
-        }); 
-        ;
+            return;        
+        });
     }
 
 app.post('/addStock', function(req, res, next) {
     var stockId = null;
+
+    // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
+    var regexStockSymbol = new RegExp(/^([a-zA-Z]{1,4}|\d{1,3}(?=\.)|\d{4,})$/);
+
+    // Validate input
+    if (!regexStockSymbol.test(req.body["new-watchlist-stock"])) {
+        alert("Error: Invalid stock symbol input.");
+        res.end();
+        return;
+    }
 
     // Check if stock exists in database
     var sqlStock = "SELECT s.id as stock_id FROM fp_stock s WHERE s.symbol = (?)";
@@ -495,8 +503,8 @@ app.post('/addStock', function(req, res, next) {
             var stockData = queryStockData(req.body["new-watchlist-stock"]);
            
             // testing API call function
-            var profile = getStockProfile("GOOG");
-
+            var profile = getStockProfile(req.body["new-watchlist-stock"]);
+            
             return;
 
             // Insert new stock to fp_stock table
