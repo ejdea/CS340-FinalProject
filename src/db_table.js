@@ -290,7 +290,8 @@ function getWatchlist(req, res, pf_data) {
 		 "( " +
 		 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
 		 "	FROM fp_price p " +
-		 "	GROUP BY p.stock_id DESC " +
+		 "	GROUP BY p.stock_id " +
+		 "	ORDER BY timestamp DESC " +
 		 ") t1 " +
 		 "  ON s.id = t1.stock_id " +
 		 "LEFT JOIN " +
@@ -319,17 +320,20 @@ function getWatchlist(req, res, pf_data) {
 		 "  ON us.stock_id = t1.stock_id " +
 		 "INNER JOIN fp_user u " +
 		 "  ON us.user_id = u.id " +
-		 "  AND u.id = (?)";
+		 "  AND u.id = (?) ";
 
     var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
 
     if (req.session.filter_sector > 0) {
         // add wehere statement to filter by sector id
-        sqlStr = sqlStr + " WHERE s.sector_id = (?)";
+        sqlStr += "WHERE s.sector_id = (?) ";
+
         // add sector id to param list
         sqlParams.push(parseInt(req.session.filter_sector));
         list.filter_sector = req.session.filter_sector;
     }
+
+    sqlStr += "ORDER BY t1.timestamp DESC";
 
     pool.query(sqlStr, sqlParams, function(err, wl_data) {
         if (err) {
