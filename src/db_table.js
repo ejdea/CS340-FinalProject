@@ -213,7 +213,8 @@ function getPortfolioTable(req, res) {
                  "( " +
                  "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
                  "	FROM fp_price p " +
-                 "	GROUP BY p.stock_id DESC " +
+                 "	GROUP BY p.stock_id " +
+                 "      ORDER BY timestamp DESC " +
                  ") t1 " +
                  "  ON s.id = t1.stock_id " +
                  "WHERE u.id = (?)" +
@@ -375,7 +376,7 @@ app.post('/createPortfolio', function(req, res, next) {
     });
 });
 
-app.post('/submitOrder', function(req, res, next) {
+function insertOrder(req, symbol, quantity, callback) {
     var sqlStr = "INSERT INTO `fp_order` (`stock_id`, `portfolio_id`, `order_type_id`, `price_id`, `quantity`) " +
                  "VALUES ( " +
                  "    (SELECT s.id FROM fp_stock s WHERE s.symbol = (?)), " +
@@ -390,13 +391,13 @@ app.post('/submitOrder', function(req, res, next) {
                  "     INNER JOIN fp_stock s " +
                  "	  ON t1.stock_id = s.id " +
                  "	  AND s.id = (SELECT s.id FROM fp_stock s WHERE s.symbol = (?))), " +
-                 "     (?) " +
+                 "    (?) " +
                  ")";
-    var sqlVar = [ req.body["new-order-symbol"],
+    var sqlVar = [ symbol,
                    req.session.portfolio_id,
                    req.body["new-order-type"],
-                   req.body["new-order-symbol"],
-                   req.body["new-order-quantity"] ];
+                   symbol,
+                   quantity ];
 
     pool.query(sqlStr, sqlVar, function(err, result) {
         if(err) {
@@ -404,8 +405,45 @@ app.post('/submitOrder', function(req, res, next) {
             return;
         }
 
-        // Send insertid back to client-side
+        callback();
+    });
+}
+
+app.post('/submitOrder', function(req, res, next) {
+    // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
+    var regexStockSymbol = new RegExp(/^([a-zA-Z]{1,4}|\d{1,3}(?=\.)|\d{4,})$/);
+    var regexInt = new RegExp(/^[0-9]*$/);
+
+    // Validate input
+    if (!regexStockSymbol.test(req.body["new-order-symbol"])) {
+        console.log("Error: Invalid stock symbol input.");
         res.redirect('home');
+        return;
+    }
+
+    if (!regexInt.test(req.body["new-order-quantity"])) {
+        console.log("Error: Invalid quantity.");
+        res.redirect('home');
+        return;
+    }
+
+    var symbol = req.body["new-order-symbol"];
+    var quantity = req.body["new-order-quantity"];
+
+    isStockInDb(symbol, function(isStockInDb, stockId) {
+        if (isStockInDb > 0) {
+            insertOrder(req, symbol, quantity, function() {
+                // Send insertid back to client-side
+                res.redirect('home');
+            });
+        } else {
+            insertStock(req, symbol, function(stockId) {
+                insertOrder(req, symbol, quantity, function() {
+                    // Send insertid back to client-side
+                    res.redirect('home');
+                });
+            });
+        }
     });
 });
 
@@ -553,38 +591,6 @@ function queryStockPrice(symbol, stock_id, callback) {
             console.log('Error: stock_id was unexpectedly null when querying for querying stock prices.');
             callback();
             return;
-
-            for (var date in time_series) {
-                var price = time_series[date]['4. close'];
-
-                // Check if db already has this date's price data for this stock
-                sqlStr = "SELECT IF(COUNT(p.id) > 0, 1, 0) AS isPriceAdded FROM fp_price p WHERE p.timestamp = (?)";
-                sqlVar = [ date ];
-
-                pool.query(sqlStr, sqlVar, function(err, result) {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-
-                    // If this date's price data is not in the db, then add it.
-                    if (result[0].isPriceAdded == 0) {
-                        sqlStr = "INSERT INTO fp_price () VALUES ()";
-                        sqlArg = "[  ]";
-
-                        pool.query(sqlStr, sqlArg, function(err, result) {
-                            if (err) {
-                                next(err);
-                                return;
-                            }
-
-                            res.end();
-                        });
-                    } else {
-                        
-                    }
-                });
-            }
         }
     });
 }
@@ -600,7 +606,8 @@ function insertStock(req, symbol, callback) {
         }
 
         // Validate input
-        if (body == null || body.length == 0 || (body.message != null && body.message.toLowerCase() == "server error")) {
+        if (symbol == null || body == null || body.length == 0 || 
+            (body.message != null && body.message.toLowerCase() == "server error")) {
             console.log("Error: API could not find the stock " + symbol + ".");
             callback();
             return;
@@ -632,24 +639,28 @@ function insertStock(req, symbol, callback) {
 
             if (result.insertId != null) {
                 stockId = result.insertId;
-
-                // Add stock to watchlist
-                var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
-                var sqlVar = [ req.session.logged_in_user_id, stockId ];
-
-                pool.query(sqlStr, sqlVar, function(err, result) {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-
-                    callback(stockId);
-                });
+                callback(stockId);
             } else {
                 console.log('Error: Failed to add "' + symbol + '" to watchlist.');
                 callback(null);
             }
         });
+    });
+}
+
+function isStockInDb(symbol, callback) {
+    // Check if stock exists in database
+    var sqlStock = "SELECT IF(COUNT(s.id) > 0, 1, 0) AS isStockInDb, s.id AS stockId FROM fp_stock s WHERE s.symbol = (?)";
+    var sqlStockParams = [ symbol ];
+
+    pool.query(sqlStock, sqlStockParams, function(err, result) {
+        if (err) {
+            console.log(err);
+            next(err);
+            return;
+        }
+
+        callback(result[0].isStockInDb, result[0].stockId);
     });
 }
 
@@ -662,25 +673,14 @@ app.post('/addStock', function(req, res, next) {
     // Validate input
     if (!regexStockSymbol.test(req.body["new-watchlist-stock"])) {
         console.log("Error: Invalid stock symbol input.");
-        res.end();
+        res.redirect('home');
         return;
     }
 
     var symbol = req.body["new-watchlist-stock"];
 
-    // Check if stock exists in database
-    var sqlStock = "SELECT s.id as stock_id FROM fp_stock s WHERE s.symbol = (?)";
-    var sqlStockParams = [ symbol ];
-
-    pool.query(sqlStock, sqlStockParams, function(err, result) {
-        if (err) {
-            next(err);
-            return;
-        }
-
-        if (result.length > 0) {
-            stockId = result[0].stock_id;
-
+    isStockInDb(symbol, function(isStockInDb, stockId) {
+        if (isStockInDb > 0) {
             // Check if stock has already been added to the watchlist
             var sqlStr = "SELECT IF(COUNT(us.stock_id) > 0, 1, 0) AS isStockInWatchlist " +
                          "FROM fp_user_stock us " +
@@ -719,6 +719,18 @@ app.post('/addStock', function(req, res, next) {
             });
         } else {
             insertStock(req, symbol, function(stockId) {
+                // Add stock to watchlist
+                var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
+                var sqlVar = [ req.session.logged_in_user_id, stockId ];
+
+                pool.query(sqlStr, sqlVar, function(err, result) {
+                    if (err) {
+                        console.log(err);
+                        next(err);
+                        return;
+                    }
+                });
+
                 queryStockPrice(symbol, stockId, function() {
                     res.redirect('home');
                 }); 

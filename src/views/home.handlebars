@@ -168,6 +168,7 @@
 							<td>{{this.price}}</td>
 							<td>{{this.percentage_change}}</td>
 							<td>
+								<span>{{this.timestamp}}
 								<!-- form with button to delete stock from watchlist -->
 								<form action="deleteStock" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
 									<input type="hidden" value="{{this.stock_id}}" name="delete-stock-id" class="watchlist-delete-btn">
@@ -175,6 +176,7 @@
 										<span aria-hidden="true">&times;</span>
 									</button>
 								</form>
+								</span>
 							</td>
 						</tr>
 						{{/each}}
