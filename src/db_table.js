@@ -85,7 +85,7 @@ app.post('/', function(req, res, next) {
             if (results[0]) {
                 req.session.logged_in_username = req.body.login_username;
                 req.session.logged_in_user_id = results[0].id;
-                req.session.filter_sector = 0;
+                //req.session.filter_sector = 0;
                 // get id of user's first portfolio
 
                 sqlStr = "SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id=(?)";
@@ -108,7 +108,6 @@ app.post('/', function(req, res, next) {
             }
         }); 
     }
-
 });
 
 
@@ -169,6 +168,10 @@ app.get('/home', function(req, res, next) {
         req.session.portfolio_id = req.body.portfolio;
     }
 
+    if (req.body.filterWatchlistMenu != null) {
+        req.session.filter_sector = req.body.filterWatchlistMenu;
+    }
+
     // check if the user is logged in
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
@@ -185,15 +188,15 @@ app.post('/home', function(req, res, next) {
         req.session.portfolio_id = req.body.portfolio;
     }
 
-    if (req.body.filter_sector) {
-        req.session.filter_sector = req.body.filter_sector;
+    if (req.body.filterWatchlistMenu != null) {
+        req.session.filter_sector = req.body.filterWatchlistMenu;
     }
+
     // check if the user is logged in
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
         res.render('login');
-    }
-    else {
+    } else {
 	// user is logged in
         getPortfolioTable(req, res);
     }
@@ -273,14 +276,19 @@ function getWatchlist(req, res, pf_data) {
         list.order_type_list = ot_data;
     });
 
-    var sqlSectors = "SELECT id, name FROM fp_sector";
+    var sqlSectors = "SELECT 0 AS sector_id, 'All' AS sector_name UNION " +
+                     "SELECT id AS sector_id, name AS sector_name " +
+                     "FROM fp_sector " +
+                     "ORDER BY sector_name ASC";
 
     pool.query(sqlSectors, function(err, sector_names) {
         if (err) {
             next(err);
             return;
         }
+
         list.sector_names = sector_names;
+        list.filter_sector = req.session.filter_sector;
     });
 
     // Query watchlist data
@@ -330,7 +338,6 @@ function getWatchlist(req, res, pf_data) {
 
         // add sector id to param list
         sqlParams.push(parseInt(req.session.filter_sector));
-        list.filter_sector = req.session.filter_sector;
     }
 
     sqlStr += "ORDER BY t1.timestamp DESC";
