@@ -232,6 +232,62 @@ function getPortfolioTable(req, res) {
     });
 }
 
+function queryPortfolioList(req, list, callback) {
+    // Query portfolio name
+    var sqlPortfolioName = "SELECT p.id AS portfolio_id, p.name AS portfolio_name " +
+                           "FROM fp_user u, fp_portfolio p " +
+                           "WHERE u.id = (?) " +
+                           "AND u.id = p.user_id";
+
+    pool.query(sqlPortfolioName, req.session.logged_in_user_id, function(err, pf_name) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        list.pf_list = pf_name;
+        list.selected_portfolio = req.session.portfolio_id;
+
+        callback(list);
+    });
+}
+
+function queryOrderTypes(list, callback) {
+    // Query order types
+    var sqlOrderTypes = "SELECT ot.id AS order_type_id, ot.type AS order_type_name " +
+                        "FROM fp_order_type ot ORDER BY ot.id ASC";
+
+    pool.query(sqlOrderTypes, null, function(err, ot_data) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        list.order_type_list = ot_data;
+
+        callback(list);
+    });
+}
+
+function querySectors(req, list, callback) {
+    var sqlSectors = "SELECT 0 AS sector_id, 'All' AS sector_name UNION " +
+                     "SELECT id AS sector_id, name AS sector_name " +
+                     "FROM fp_sector " +
+                     "ORDER BY sector_name ASC";
+
+    pool.query(sqlSectors, function(err, sector_names) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        list.sector_names = sector_names;
+        list.filter_sector = req.session.filter_sector;
+
+        callback(list);
+    });
+}
+
 function getWatchlist(req, res, pf_data) {
     let list = {};
     list.pf_data = pf_data;
@@ -247,114 +303,77 @@ function getWatchlist(req, res, pf_data) {
     list.username = req.session.logged_in_username;
 
     // Query portfolio name
-    var sqlPortfolioName = "SELECT p.id AS portfolio_id, p.name AS portfolio_name " +
-                           "FROM fp_user u, fp_portfolio p " +
-                           "WHERE u.id = (?) " +
-                           "AND u.id = p.user_id";
+    queryPortfolioList(req, list, function() {
+        queryOrderTypes(list, function() {
+            querySectors(req, list, function() {
+                // Query watchlist data
+                var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
+                "FROM fp_stock s " +
+                "INNER JOIN " +
+                "( " +
+                "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                "	FROM fp_price p " +
+                "	GROUP BY p.stock_id " +
+                "	ORDER BY timestamp DESC " +
+                ") t1 " +
+                "  ON s.id = t1.stock_id " +
+                "LEFT JOIN " +
+                "( " +
+                "	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id " +
+                "	FROM " +
+                "	( " +
+                "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                "		FROM fp_price p " +
+                "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+                "		AND p.timestamp <= concat((?), ' 23:59:59') " +
+                "		GROUP BY p.stock_id ASC " +
+                "	) t2a " +
+                "	INNER JOIN " +
+                "	( " +
+                "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                "		FROM fp_price p " +
+                "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+                "		AND p.timestamp <= concat((?), ' 23:59:59') " +
+                "		GROUP BY p.stock_id DESC " +
+                "	) t2b " +
+                "	  ON t2a.stock_id = t2b.stock_id " +
+                ") t2 " +
+                "  ON t2.stock_id = t1.stock_id " +
+                "INNER JOIN fp_user_stock us  " +
+                "  ON us.stock_id = t1.stock_id " +
+                "INNER JOIN fp_user u " +
+                "  ON us.user_id = u.id " +
+                "  AND u.id = (?) ";
 
-    pool.query(sqlPortfolioName, req.session.logged_in_user_id, function(err, pf_name) {
-        if (err) {
-            next(err);
-            return;
-        }
+                var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
 
-        list.pf_list = pf_name;
-        list.selected_portfolio = req.session.portfolio_id;
-    });
+                if (req.session.filter_sector > 0) {
+                    // add wehere statement to filter by sector id
+                    sqlStr += "WHERE s.sector_id = (?) ";
 
-    // Query order types
-    var sqlOrderTypes = "SELECT ot.id AS order_type_id, ot.type AS order_type_name " +
-                        "FROM fp_order_type ot ORDER BY ot.id ASC";
+                    // add sector id to param list
+                    sqlParams.push(parseInt(req.session.filter_sector));
+                }
 
-    pool.query(sqlOrderTypes, null, function(err, ot_data) {
-        if (err) {
-            next(err);
-            return;
-        }
+                sqlStr += "ORDER BY t1.timestamp DESC";
 
-        list.order_type_list = ot_data;
-    });
+                pool.query(sqlStr, sqlParams, function(err, wl_data) {
+                    if (err) {
+                        next(err);
+                        return;
+                    }
 
-    var sqlSectors = "SELECT 0 AS sector_id, 'All' AS sector_name UNION " +
-                     "SELECT id AS sector_id, name AS sector_name " +
-                     "FROM fp_sector " +
-                     "ORDER BY sector_name ASC";
+                    // Check if query returned an empty dataset
+                    if (wl_data.length > 0) {
+                        if (wl_data) {
+                            list.wl_data = wl_data;
+                        }
+                    }
 
-    pool.query(sqlSectors, function(err, sector_names) {
-        if (err) {
-            next(err);
-            return;
-        }
-
-        list.sector_names = sector_names;
-        list.filter_sector = req.session.filter_sector;
-    });
-
-    // Query watchlist data
-    var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
-		 "FROM fp_stock s " +
-		 "INNER JOIN " +
-		 "( " +
-		 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-		 "	FROM fp_price p " +
-		 "	GROUP BY p.stock_id " +
-		 "	ORDER BY timestamp DESC " +
-		 ") t1 " +
-		 "  ON s.id = t1.stock_id " +
-		 "LEFT JOIN " +
-		 "( " +
-		 "	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id " +
-		 "	FROM " +
-		 "	( " +
-		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-		 "		FROM fp_price p " +
-		 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
-		 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
-		 "		GROUP BY p.stock_id ASC " +
-		 "	) t2a " +
-		 "	INNER JOIN " +
-		 "	( " +
-		 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-		 "		FROM fp_price p " +
-		 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
-		 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
-		 "		GROUP BY p.stock_id DESC " +
-		 "	) t2b " +
-		 "	  ON t2a.stock_id = t2b.stock_id " +
-		 ") t2 " +
-		 "  ON t2.stock_id = t1.stock_id " +
-		 "INNER JOIN fp_user_stock us  " +
-		 "  ON us.stock_id = t1.stock_id " +
-		 "INNER JOIN fp_user u " +
-		 "  ON us.user_id = u.id " +
-		 "  AND u.id = (?) ";
-
-    var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
-
-    if (req.session.filter_sector > 0) {
-        // add wehere statement to filter by sector id
-        sqlStr += "WHERE s.sector_id = (?) ";
-
-        // add sector id to param list
-        sqlParams.push(parseInt(req.session.filter_sector));
-    }
-
-    sqlStr += "ORDER BY t1.timestamp DESC";
-
-    pool.query(sqlStr, sqlParams, function(err, wl_data) {
-        if (err) {
-            next(err);
-            return;
-        }
-
-        // Check if query returned an empty dataset
-        if (wl_data.length > 0) {
-            if (wl_data) {
-                list.wl_data = wl_data;
-            }
-        }
-
-        res.render('home', list);
+                    res.render('home', list);
+                });
+            });
+        });
     });
 }
 
