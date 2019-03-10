@@ -85,8 +85,6 @@ app.post('/', function(req, res, next) {
             if (results[0]) {
                 req.session.logged_in_username = req.body.login_username;
                 req.session.logged_in_user_id = results[0].id;
-                //req.session.filter_sector = 0;
-                // get id of user's first portfolio
 
                 sqlStr = "SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id=(?)";
                 pool.query(sqlStr, req.session.logged_in_user_id, function(err, results) {
@@ -481,7 +479,7 @@ function queryStockPrice(symbol, stock_id, callback) {
 
         // Validate input
         if (body == null || body.length == 0) {
-            res.end();
+            callback();
             return;
         }
 
@@ -490,7 +488,7 @@ function queryStockPrice(symbol, stock_id, callback) {
         // Validate input
         if (time_series == null || time_series.length == 0) {
             console.log("Error: API query did not return any price data for " + symbol + '.');
-            res.end();
+            callback();
             return;
         }
 
@@ -593,11 +591,18 @@ function queryStockPrice(symbol, stock_id, callback) {
 
 function insertStock(req, symbol, callback) {
     var apiUrl = "https://financialmodelingprep.com/public/api/company/profile/" + symbol;
-        
+
     request({url: apiUrl, json: true}, (err, res, body) => {
         if (err) {
             console.log(err);
             next(err);
+            return;
+        }
+
+        // Validate input
+        if (body == null || body.length == 0 || (body.message != null && body.message.toLowerCase() == "server error")) {
+            console.log("Error: API could not find the stock " + symbol + ".");
+            callback();
             return;
         }
 
@@ -688,7 +693,7 @@ app.post('/addStock', function(req, res, next) {
                     return;
                 }
 
-                // If the stock is not in the watchlist yet
+                // If the stock is in fp_stock but not in the watchlist yet
                 if(result[0].isStockInWatchlist == 0) {
                     // Add stock to watchlist
                     var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
