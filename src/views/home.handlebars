@@ -134,7 +134,7 @@
 							<label for="filterWatchlistMenu">Filter by Sector:</label>
 							<select onChange="this.form.submit()" name="filterWatchlistMenu" id="filterWatchlistMenu">
                                 				{{#each sector_names}}
-									{{#ifeq this.sector_id ../../filter_sector }}
+									{{#ifeq this.sector_id ../../filter_sector}}
 										<option value="{{this.sector_id}}" selected>{{this.sector_name}}</option>
 									{{else}}
 										<option value="{{this.sector_id}}">{{this.sector_name}}</option>
@@ -166,7 +166,15 @@
 							</td>
 							<td>{{this.name}}</td>
 							<td>{{this.price}}</td>
-							<td>{{this.percentage_change}}</td>
+							{{#ifgr this.percentage_change 0}}
+							<td class="font-green">{{this.percentage_change}}%</td>
+							{{/ifgr}}
+							{{#iflt this.percentage_change 0}}
+							<td class="font-red">{{this.percentage_change}}%</td>
+							{{/iflt}}
+							{{#ifeq this.percentage_change 0}}
+							<td class="font-black">{{this.percentage_change}}%</td>
+							{{/ifeq}}
 							<td>
 								<span>{{this.timestamp}}
 								<!-- form with button to delete stock from watchlist -->

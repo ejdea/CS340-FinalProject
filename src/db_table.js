@@ -45,6 +45,14 @@ hbars.registerHelper('ifeq', function(arg1, arg2, options) {
     return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
 });
 
+hbars.registerHelper('ifgr', function(arg1, arg2, options) {
+    return (arg1 > arg2) ? options.fn(this) : options.inverse(this);
+});
+
+hbars.registerHelper('iflt', function(arg1, arg2, options) {
+    return (arg1 < arg2) ? options.fn(this) : options.inverse(this);
+});
+
 
 app.get('/', function(req, res, next) {
     // if user is already logged in, redirect request to homepage
@@ -297,7 +305,7 @@ function queryWatchlist(req, list, callback) {
     var date = yyyy + '-' + mm + '-' + dd;
 
     // Query watchlist data
-    var sqlStr = "SELECT t1a.stock_id, s.symbol, t1a.price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp " +
+    var sqlStr = "SELECT t1a.stock_id, s.name, s.symbol, ROUND(t1a.price, 2) AS price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp " +
                  "FROM fp_price t1a " +
                  "INNER JOIN fp_price t1b " +
                  "ON t1a.stock_id = t1b.stock_id " +
