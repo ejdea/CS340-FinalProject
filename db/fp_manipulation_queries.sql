@@ -27,45 +27,32 @@ SELECT MIN(id) AS first_portfolio FROM fp_portfolio WHERE user_id = :user_id
 
 
 -- Get user's watchlist
-SELECT s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change
-FROM fp_stock s
-INNER JOIN
-(
-    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
-	FROM fp_price p
-	GROUP BY p.stock_id DESC
-) t1
-  ON s.id = t1.stock_id
-LEFT JOIN
-(
-	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id
-	FROM
-	(
-		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
-		FROM fp_price p
-		WHERE p.timestamp >= concat(:current_date_input, ' 00:00:00')
-		AND p.timestamp <= concat(:current_date_input, ' 23:59:59')
-		GROUP BY p.stock_id ASC
-	) t2a
-	INNER JOIN
-	(
-		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price
-		FROM fp_price p
-		WHERE p.timestamp >= concat(:current_date_input, ' 00:00:00')
-		AND p.timestamp <= concat(:current_date_input, ' 23:59:59')
-		GROUP BY p.stock_id DESC
-	) t2b
-	  ON t2a.stock_id = t2b.stock_id
-) t2
-  ON t2.stock_id = t1.stock_id
+SELECT t1a.stock_id, s.symbol, t1a.price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp
+FROM fp_price t1a
+INNER JOIN fp_price t1b
+ON t1a.stock_id = t1b.stock_id
+AND t1a.timestamp = (
+    SELECT timestamp
+    FROM fp_price temp1 
+    WHERE temp1.stock_id = t1a.stock_id
+    ORDER BY timestamp DESC LIMIT 1
+)
+AND t1b.timestamp = (
+    SELECT timestamp 
+    FROM fp_price temp2 
+    WHERE temp2.stock_id = t1b.stock_id 
+    ORDER BY timestamp DESC LIMIT 1 OFFSET 1
+)
+INNER JOIN fp_stock s
+  ON s.id = t1a.stock_id
 INNER JOIN fp_user_stock us 
-  ON us.stock_id = t1.stock_id
+  ON s.id = us.stock_id
 INNER JOIN fp_user u
-  ON us.user_id = u.id
-  AND u.id = :user_id_input
+  ON u.id = us.user_id
+  AND u.id = :user_input
 -- the following is added when the user chooses to filter watchlist
 WHERE s.sector_id = :filter_sector
-
+ORDER BY s.symbol ASC
   
 -- Calculate percentage change in user watchlist
 -- NOTE: This query is just a subquery in the user watchlist query.

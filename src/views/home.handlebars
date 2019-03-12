@@ -39,8 +39,8 @@
 								{{/each}}
 							</select>
 						</form>
-                        {{else}}
-                        <p>None</p>
+						{{else}}
+						<p>None</p>
 						{{/if}}
 					</span>
 					<span class="table-header-contents">
@@ -108,7 +108,6 @@
 						{{#if order_type_list}}
 						<select name="new-order-type" id="new-order-type">
 							{{#each order_type_list}}
-                            
 							<option value="{{this.order_type_id}}" name="{{this.order_type_name}}">{{this.order_type_name}}</option>
 							{{/each}}
 						</select>
@@ -130,19 +129,20 @@
 							<input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="Symbol">
 							<button type="submit" class="btn btn-primary btn-sm">Add</button>
 						</form>
-						<form action="/home" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
-							<label for="filter-watchlist-menu">Filter by Sector:</label>
-							<select onChange="this.form.submit()" name="filter_sector" id="filter-watchlist-menu">
-								<option value="0">All</option>
-                                {{#each sector_names}}
-								    {{#ifeq this.id ../filter_sector }}
-									    <option value="{{this.id}}" selected>{{this.name}}</option>
-								    {{else}}
-									    <option value="{{this.id}}">{{this.name}}</option>
-				                    {{/ifeq}}	
-                                {{/each}}
+						{{#if sector_names}}
+						<form action="home" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
+							<label for="filterWatchlistMenu">Filter by Sector:</label>
+							<select onChange="this.form.submit()" name="filterWatchlistMenu" id="filterWatchlistMenu">
+                                				{{#each sector_names}}
+									{{#ifeq this.sector_id ../../filter_sector}}
+										<option value="{{this.sector_id}}" selected>{{this.sector_name}}</option>
+									{{else}}
+										<option value="{{this.sector_id}}">{{this.sector_name}}</option>
+									{{/ifeq}}
+                                				{{/each}}
 							</select>
 						</form>
+						{{/if}}
 					</span>
 				</div>
 				
@@ -166,8 +166,17 @@
 							</td>
 							<td>{{this.name}}</td>
 							<td>{{this.price}}</td>
-							<td>{{this.percentage_change}}</td>
+							{{#ifgr this.percentage_change 0}}
+							<td class="font-green">{{this.percentage_change}}%</td>
+							{{/ifgr}}
+							{{#iflt this.percentage_change 0}}
+							<td class="font-red">{{this.percentage_change}}%</td>
+							{{/iflt}}
+							{{#ifeq this.percentage_change 0}}
+							<td class="font-black">{{this.percentage_change}}%</td>
+							{{/ifeq}}
 							<td>
+								<span>{{this.timestamp}}
 								<!-- form with button to delete stock from watchlist -->
 								<form action="deleteStock" method="POST" id="delete-from-watchlist-{{this.stock_id}}" name="delete-from-watchlist">
 									<input type="hidden" value="{{this.stock_id}}" name="delete-stock-id" class="watchlist-delete-btn">
@@ -175,6 +184,7 @@
 										<span aria-hidden="true">&times;</span>
 									</button>
 								</form>
+								</span>
 							</td>
 						</tr>
 						{{/each}}
