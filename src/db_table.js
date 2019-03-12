@@ -288,16 +288,85 @@ function querySectors(req, list, callback) {
     });
 }
 
-function getWatchlist(req, res, pf_data) {
-    let list = {};
-    list.pf_data = pf_data;
-
+function queryWatchlist(req, list, callback) {
     // Get current date
     var today = new Date();
     var dd = today.getDate();
     var mm = today.getMonth() + 1; // January=0
     var yyyy = today.getFullYear();
     var date = yyyy + '-' + mm + '-' + dd;
+
+    // Query watchlist data
+    var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
+                 "FROM fp_stock s " +
+                 "INNER JOIN " +
+                 "( " +
+                 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                 "	FROM fp_price p " +
+                 "	GROUP BY p.stock_id " +
+                 "	ORDER BY timestamp DESC " +
+                 ") t1 " +
+                 "  ON s.id = t1.stock_id " +
+                 "LEFT JOIN " +
+                 "( " +
+                 "	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id " +
+                 "	FROM " +
+                 "	( " +
+                 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                 "		FROM fp_price p " +
+                 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+                 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
+                 "		GROUP BY p.stock_id ASC " +
+                 "	) t2a " +
+                 "	INNER JOIN " +
+                 "	( " +
+                 "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
+                 "		FROM fp_price p " +
+                 "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
+                 "		AND p.timestamp <= concat((?), ' 23:59:59') " +
+                 "		GROUP BY p.stock_id DESC " +
+                 "	) t2b " +
+                 "	  ON t2a.stock_id = t2b.stock_id " +
+                 ") t2 " +
+                 "  ON t2.stock_id = t1.stock_id " +
+                 "INNER JOIN fp_user_stock us  " +
+                 "  ON us.stock_id = t1.stock_id " +
+                 "INNER JOIN fp_user u " +
+                 "  ON us.user_id = u.id " +
+                 "  AND u.id = (?) ";
+
+    var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
+
+    if (req.session.filter_sector > 0) {
+        // add wehere statement to filter by sector id
+        sqlStr += "WHERE s.sector_id = (?) ";
+
+        // add sector id to param list
+        sqlParams.push(parseInt(req.session.filter_sector));
+    }
+
+    sqlStr += "ORDER BY t1.timestamp DESC";
+
+    pool.query(sqlStr, sqlParams, function(err, wl_data) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        // Check if query returned an empty dataset
+        if (wl_data.length > 0) {
+            if (wl_data) {
+                list.wl_data = wl_data;
+            }
+        }
+
+        callback();
+    });
+}
+
+function getWatchlist(req, res, pf_data) {
+    let list = {};
+    list.pf_data = pf_data;
 
     // Set username
     list.username = req.session.logged_in_username;
@@ -306,70 +375,7 @@ function getWatchlist(req, res, pf_data) {
     queryPortfolioList(req, list, function() {
         queryOrderTypes(list, function() {
             querySectors(req, list, function() {
-                // Query watchlist data
-                var sqlStr = "SELECT s.id AS stock_id, s.symbol, s.name, t1.timestamp, FORMAT(ROUND(t1.price, 2), 2) AS price, IFNULL(t2.percentage_change, 0) as percentage_change " +
-                "FROM fp_stock s " +
-                "INNER JOIN " +
-                "( " +
-                "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-                "	FROM fp_price p " +
-                "	GROUP BY p.stock_id " +
-                "	ORDER BY timestamp DESC " +
-                ") t1 " +
-                "  ON s.id = t1.stock_id " +
-                "LEFT JOIN " +
-                "( " +
-                "	SELECT ROUND(((t2b.price - t2a.price) / t2a.price * 100), 2) AS percentage_change, t2a.stock_id " +
-                "	FROM " +
-                "	( " +
-                "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-                "		FROM fp_price p " +
-                "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
-                "		AND p.timestamp <= concat((?), ' 23:59:59') " +
-                "		GROUP BY p.stock_id ASC " +
-                "	) t2a " +
-                "	INNER JOIN " +
-                "	( " +
-                "		SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-                "		FROM fp_price p " +
-                "		WHERE p.timestamp >= concat((?), ' 00:00:00') " +
-                "		AND p.timestamp <= concat((?), ' 23:59:59') " +
-                "		GROUP BY p.stock_id DESC " +
-                "	) t2b " +
-                "	  ON t2a.stock_id = t2b.stock_id " +
-                ") t2 " +
-                "  ON t2.stock_id = t1.stock_id " +
-                "INNER JOIN fp_user_stock us  " +
-                "  ON us.stock_id = t1.stock_id " +
-                "INNER JOIN fp_user u " +
-                "  ON us.user_id = u.id " +
-                "  AND u.id = (?) ";
-
-                var sqlParams = [ date, date, date, date, req.session.logged_in_user_id ];
-
-                if (req.session.filter_sector > 0) {
-                    // add wehere statement to filter by sector id
-                    sqlStr += "WHERE s.sector_id = (?) ";
-
-                    // add sector id to param list
-                    sqlParams.push(parseInt(req.session.filter_sector));
-                }
-
-                sqlStr += "ORDER BY t1.timestamp DESC";
-
-                pool.query(sqlStr, sqlParams, function(err, wl_data) {
-                    if (err) {
-                        next(err);
-                        return;
-                    }
-
-                    // Check if query returned an empty dataset
-                    if (wl_data.length > 0) {
-                        if (wl_data) {
-                            list.wl_data = wl_data;
-                        }
-                    }
-
+                queryWatchlist(req, list, function() {
                     res.render('home', list);
                 });
             });
