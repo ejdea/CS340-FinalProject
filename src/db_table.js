@@ -301,10 +301,16 @@ function queryWatchlist(req, list, callback) {
                  "FROM fp_stock s " +
                  "INNER JOIN " +
                  "( " +
-                 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-                 "	FROM fp_price p " +
-                 "	GROUP BY p.stock_id " +
-                 "	ORDER BY timestamp DESC " +
+                 "    SELECT t1.timestamp, t1.stock_id, t1.price, s.symbol " +
+                 "    FROM fp_stock s " +
+                 "    INNER JOIN " +
+                 "    ( " +
+                 "        SELECT p.timestamp, p.stock_id, p.price " +
+                 "        FROM fp_price p " +
+                 "        GROUP BY p.stock_id DESC " +
+                 "    ) t1 " +
+                 "    ON t1.stock_id = s.id " +
+                 "    ORDER BY s.symbol DESC " +
                  ") t1 " +
                  "  ON s.id = t1.stock_id " +
                  "LEFT JOIN " +
