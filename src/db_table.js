@@ -1,4 +1,4 @@
-var port = 34520
+var port = 34523;
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
