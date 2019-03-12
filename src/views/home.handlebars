@@ -19,10 +19,10 @@
 		</div>
 	</nav>
 	
-	<div class="container-fluid">  
+	<div class="container-fluid home-content">  
 		<div class="row" id="main-row">
 			
-			<div class="col-md-7 home-col" id="portfolio-col">
+			<div class="col-lg-7 home-col" id="portfolio-col">
 				<div id="portfolio-header" class="text-left table-header">
 					<span class="table-header-title">
 						Portfolio: 
@@ -117,7 +117,7 @@
 				</div>
 			</div>
 			
-			<div class="col-md-5 home-col" id="watchlist-col">
+			<div class="col-lg-5 home-col" id="watchlist-col">
 				<div id="watchlist-header" class="text-left table-header">
 					<span class="table-header-title">
 						Watchlist
@@ -129,6 +129,9 @@
 							<input type="text" name="new-watchlist-stock" id="new-watchlist-stock" maxlength="5" size="6" placeholder="Symbol">
 							<button type="submit" class="btn btn-primary btn-sm">Add</button>
 						</form>
+
+                        <br>
+
 						{{#if sector_names}}
 						<form action="home" method="POST" id="filter-watchlist-form" name="filter-watchlist-form">
 							<label for="filterWatchlistMenu">Filter by Sector:</label>

@@ -15,6 +15,10 @@
     margin: 10px;
 }
 
+.error-text {
+    color: red;
+}
+
 /*****************************
             NAVBAR           
 *****************************/
@@ -73,7 +77,7 @@
 .dropdown-menu a:hover {
    background-color: #3b5998 !important;
 }
- 
+
 #login-form input {
 	background: #f9f8de;
 }
@@ -108,6 +112,7 @@
 
 #login-img {
 	border-radius: 10px;
+    width: 100%;
 }
 
 /*****************************
@@ -122,8 +127,8 @@
 	background-color: #485167;
 	color: white;
 	text-align: center;
-	vertical-align: middle;
-	position: absolute;
+	vertical-align: bottom;
+	position: relative;
 	bottom: 0;
 }
 
@@ -135,7 +140,7 @@
 
 .scroll {
     overflow-y: scroll;
-    max-height: 350px;
+    max-height: 475px;
     border: 1px solid #cccccc;
     padding: 2px;
     margin: 2px
@@ -162,6 +167,7 @@ table, tr, th, td {
 
 th, td {
     padding: 3px;
+    //height: auto;
 }
 
 
@@ -199,7 +205,7 @@ th, td {
 	background-color: #eeeeee;
 	padding: 1px 5px 1px 5px;
 	color: #333333;
-	height: 33px;
+	height: auto;
 	overflow: auto;
 }
 
@@ -210,7 +216,7 @@ th, td {
 .table-header-title {
 	font-weight: bolder;
 	float: left;
-	height: 100%;
+	height: 33px;
 	vertical-align: middle;
 	padding-top: 3px;
 }
@@ -223,6 +229,9 @@ th, td {
 	display: inline;
 }
 
+.home-content {
+}
+
 #new-order-form {
 	display: inline;
 	float: right;
@@ -232,6 +241,9 @@ th, td {
 	width: 70px;
 }
 
+#main-row {
+    //height: 600px;
+}
 /*****************************
         Whole Website
 *****************************/
