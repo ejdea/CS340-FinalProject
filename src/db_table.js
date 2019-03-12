@@ -333,7 +333,7 @@ function queryWatchlist(req, list, callback) {
 
     if (req.session.filter_sector > 0) {
         // add wehere statement to filter by sector id
-        sqlStr += "AND s.sector_id = (?) ";
+        sqlStr += "WHERE s.sector_id = (?) ";
 
         // add sector id to param list
         sqlParams.push(parseInt(req.session.filter_sector));
