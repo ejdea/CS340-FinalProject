@@ -446,7 +446,7 @@ app.post('/submitOrder', function(req, res, next) {
         return;
     }
 
-    var symbol = req.body["new-order-symbol"];
+    var symbol = req.body["new-order-symbol"].toUpperCase();
     var quantity = req.body["new-order-quantity"];
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
@@ -696,7 +696,7 @@ app.post('/addStock', function(req, res, next) {
         return;
     }
 
-    var symbol = req.body["new-watchlist-stock"];
+    var symbol = req.body["new-watchlist-stock"].toUpperCase();
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
         if (isStockInDb > 0) {
