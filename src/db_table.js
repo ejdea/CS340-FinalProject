@@ -1,4 +1,4 @@
-var port = 34523;
+var port = 34520
 var serverName = "http://flip3.engr.oregonstate.edu";
 
 var sqlHost = 'classmysql.engr.oregonstate.edu';
@@ -210,24 +210,23 @@ app.post('/home', function(req, res, next) {
 
 function getPortfolioTable(req, res) {
     var inputParams;
-    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(t1.price, 2), 2) AS current_price, ot.type AS order_type, o.id AS order_id " +
+    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, ot.type, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(p1.price, 2), 2) AS current_price " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
                  "INNER JOIN fp_order o ON pf.id = o.portfolio_id " +
                  "INNER JOIN fp_stock s ON o.stock_id = s.id " +
                  "INNER JOIN fp_order_type ot ON o.order_type_id = ot.id " +
                  "INNER JOIN fp_price p ON o.price_id = p.id " +
-                 "LEFT JOIN " +
-                 "( " +
-                 "    SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price " +
-                 "	FROM fp_price p " +
-                 "	GROUP BY p.stock_id " +
-                 "      ORDER BY timestamp DESC " +
-                 ") t1 " +
-                 "  ON s.id = t1.stock_id " +
-                 "WHERE u.id = (?)" +
-                 "AND pf.id = (?)";
-
+                 "LEFT JOIN fp_price p1 ON p1.id = ( " +
+                 "	SELECT p1a.id " +
+                 "	FROM fp_price p1a " +
+                 "	WHERE p1.stock_id = p1a.stock_id " +
+                 "	ORDER BY p1a.timestamp DESC LIMIT 1 " +
+                 ") " +
+                 "AND p1.stock_id = s.id " +
+                 "WHERE u.id = (?) " +
+                 "AND pf.id = (?) " +
+                 "ORDER BY s.name, purchase_date, o.quantity ASC";
     inputParams = [ req.session.logged_in_user_id, req.session.portfolio_id ];
 
     pool.query(sqlStr, inputParams, function(err, pf_data) {
@@ -305,21 +304,21 @@ function queryWatchlist(req, list, callback) {
     var date = yyyy + '-' + mm + '-' + dd;
 
     // Query watchlist data
-    var sqlStr = "SELECT t1a.stock_id, s.name, s.symbol, ROUND(t1a.price, 2) AS price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp " +
+    var sqlStr = "SELECT t1a.stock_id, s.name, s.symbol, FORMAT(ROUND(t1a.price, 2), 2) AS price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp " +
                  "FROM fp_price t1a " +
                  "INNER JOIN fp_price t1b " +
                  "ON t1a.stock_id = t1b.stock_id " +
-                 "AND t1a.timestamp = ( " +
-                 "    SELECT timestamp " +
-                 "    FROM fp_price temp1 " +
-                 "    WHERE temp1.stock_id = t1a.stock_id " +
-                 "    ORDER BY timestamp DESC LIMIT 1 " +
+                 "AND t1a.id = ( " +
+                 "    SELECT p1.id " +
+                 "    FROM fp_price p1 " +
+                 "    WHERE p1.stock_id = t1a.stock_id " +
+                 "    ORDER BY p1.timestamp DESC LIMIT 1 " +
                  ") " +
-                 "AND t1b.timestamp = ( " +
-                 "    SELECT timestamp " +
-                 "    FROM fp_price temp2 " +
-                 "    WHERE temp2.stock_id = t1b.stock_id " +
-                 "    ORDER BY timestamp DESC LIMIT 1 OFFSET 1 " +
+                 "AND t1b.id = ( " +
+                 "    SELECT p2.id " +
+                 "    FROM fp_price p2 " +
+                 "    WHERE p2.stock_id = t1b.stock_id " +
+                 "    ORDER BY p2.timestamp DESC LIMIT 1 OFFSET 1 " +
                  ") " +
                  "INNER JOIN fp_stock s " +
                  "  ON s.id = t1a.stock_id " +
@@ -333,7 +332,7 @@ function queryWatchlist(req, list, callback) {
 
     if (req.session.filter_sector > 0) {
         // add wehere statement to filter by sector id
-        sqlStr += "WHERE s.sector_id = (?) ";
+        sqlStr += "AND s.sector_id = (?) ";
 
         // add sector id to param list
         sqlParams.push(parseInt(req.session.filter_sector));
@@ -401,15 +400,7 @@ function insertOrder(req, symbol, quantity, callback) {
                  "    (SELECT s.id FROM fp_stock s WHERE s.symbol = (?)), " +
                  "    (?), " +
                  "    (SELECT ot.id AS order_type_id FROM fp_order_type ot WHERE ot.id = (?)), " +
-                 "    (SELECT t1.price_id " +	
-                 "     FROM ( " +
-                 "         SELECT max(p.timestamp) AS timestamp, p.stock_id, p.price, p.id AS price_id " +
-                 "         FROM fp_price p " +
-                 "         GROUP BY p.stock_id DESC " +
-                 "     ) t1 " +
-                 "     INNER JOIN fp_stock s " +
-                 "	  ON t1.stock_id = s.id " +
-                 "	  AND s.id = (SELECT s.id FROM fp_stock s WHERE s.symbol = (?))), " +
+                 "    (SELECT p.id FROM fp_price p WHERE p.stock_id = (SELECT s.id FROM fp_stock s WHERE s.symbol = (?)) ORDER BY p.timestamp DESC LIMIT 1), " +
                  "    (?) " +
                  ")";
     var sqlVar = [ symbol,
@@ -420,7 +411,7 @@ function insertOrder(req, symbol, quantity, callback) {
 
     pool.query(sqlStr, sqlVar, function(err, result) {
         if(err) {
-            next(err);
+            console.log(err);
             return;
         }
 
@@ -446,7 +437,7 @@ app.post('/submitOrder', function(req, res, next) {
         return;
     }
 
-    var symbol = req.body["new-order-symbol"].toUpperCase();
+    var symbol = req.body["new-order-symbol"];
     var quantity = req.body["new-order-quantity"];
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
@@ -696,7 +687,7 @@ app.post('/addStock', function(req, res, next) {
         return;
     }
 
-    var symbol = req.body["new-watchlist-stock"].toUpperCase();
+    var symbol = req.body["new-watchlist-stock"];
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
         if (isStockInDb > 0) {
