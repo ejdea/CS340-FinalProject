@@ -304,7 +304,9 @@ function queryWatchlist(req, list, callback) {
     var date = yyyy + '-' + mm + '-' + dd;
 
     // Query watchlist data
-    var sqlStr = "SELECT t1a.stock_id, s.name, s.symbol, FORMAT(ROUND(t1a.price, 2), 2) AS price, ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, t1a.timestamp " +
+    var sqlStr = "SELECT t1a.stock_id, s.name, s.symbol, FORMAT(ROUND(t1a.price, 2), 2) AS price, " +
+                 "       ROUND(((t1a.price - t1b.price) / t1b.price * 100), 2) AS percentage_change, " +
+                 "       t1a.timestamp " +
                  "FROM fp_price t1a " +
                  "INNER JOIN fp_price t1b " +
                  "ON t1a.stock_id = t1b.stock_id " +
@@ -448,10 +450,15 @@ app.post('/submitOrder', function(req, res, next) {
             });
         } else {
             insertStock(req, symbol, function(stockId) {
-                insertOrder(req, symbol, quantity, function() {
-                    // Send insertid back to client-side
+                if (stockId != null) {
+                    insertOrder(req, symbol, quantity, function() {
+                        // Send insertid back to client-side
+                        res.redirect('home');
+                    });
+                } else {
+                   // Send insertid back to client-side
                     res.redirect('home');
-                });
+                }
             });
         }
     });
@@ -619,12 +626,19 @@ function insertStock(req, symbol, callback) {
         if (symbol == null || body == null || body.length == 0 || 
             (body.message != null && body.message.toLowerCase() == "server error")) {
             console.log("Error: API could not find the stock " + symbol + ".");
-            callback();
+            callback(null);
             return;
         }
 
-        // Parse results
-        var result = JSON.parse(body.substr(5).slice(0,-5));
+        try {
+            // Parse results
+            var result = JSON.parse(body.substr(5).slice(0,-5));
+        } catch(Err) {
+            console.log(Err);
+            callback(null);
+            return;
+        }
+
         var profile = {};
         profile.companyName = result[symbol].companyName;
         profile.sector = result[symbol].sector;
@@ -729,21 +743,25 @@ app.post('/addStock', function(req, res, next) {
             });
         } else {
             insertStock(req, symbol, function(stockId) {
-                // Add stock to watchlist
-                var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
-                var sqlVar = [ req.session.logged_in_user_id, stockId ];
+                if (stockId != null) {
+                    // Add stock to watchlist
+                    var sqlStr = "INSERT INTO fp_user_stock (`user_id`, `stock_id`) VALUES ( (?), (?) )";
+                    var sqlVar = [ req.session.logged_in_user_id, stockId ];
 
-                pool.query(sqlStr, sqlVar, function(err, result) {
-                    if (err) {
-                        console.log(err);
-                        next(err);
-                        return;
-                    }
-                });
+                    pool.query(sqlStr, sqlVar, function(err, result) {
+                        if (err) {
+                            console.log(err);
+                            next(err);
+                            return;
+                        }
+                    });
 
-                queryStockPrice(symbol, stockId, function() {
+                    queryStockPrice(symbol, stockId, function() {
+                        res.redirect('home');
+                    });
+                } else {
                     res.redirect('home');
-                }); 
+                }
             });
         }
     });
