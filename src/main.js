@@ -444,19 +444,20 @@ app.post('/submitOrder', function(req, res, next) {
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
         if (isStockInDb > 0) {
-            insertOrder(req, symbol, quantity, function() {
-                // Send insertid back to client-side
-                res.redirect('home');
+            queryStockPrice(symbol, stockId, function() {
+                insertOrder(req, symbol, quantity, function() {
+                    res.redirect('home');
+                });
             });
         } else {
             insertStock(req, symbol, function(stockId) {
                 if (stockId != null) {
-                    insertOrder(req, symbol, quantity, function() {
-                        // Send insertid back to client-side
-                        res.redirect('home');
+                    queryStockPrice(symbol, stockId, function() {
+                        insertOrder(req, symbol, quantity, function() {
+                            res.redirect('home');
+                        });
                     });
                 } else {
-                   // Send insertid back to client-side
                     res.redirect('home');
                 }
             });
@@ -613,7 +614,7 @@ function queryStockPrice(symbol, stock_id, callback) {
 }
 
 function insertStock(req, symbol, callback) {
-    var apiUrl = "https://financialmodelingprep.com/public/api/company/profile/" + symbol;
+    var apiUrl = "https://financialmodelingprep.com/api/company/profile/" + symbol;
 
     request({url: apiUrl, json: true}, (err, res, body) => {
         if (err) {
@@ -633,15 +634,21 @@ function insertStock(req, symbol, callback) {
         try {
             // Parse results
             var result = JSON.parse(body.substr(5).slice(0,-5));
+            var profile = {};
+            profile.companyName = result[symbol].companyName;
+            profile.sector = result[symbol].sector;
         } catch(Err) {
             console.log(Err);
+            console.log('body = ' + JSON.stringify(body));
             callback(null);
             return;
         }
 
-        var profile = {};
-        profile.companyName = result[symbol].companyName;
-        profile.sector = result[symbol].sector;
+        if (profile.companyName == null || profile.sector == null) {
+            console.log("Error: Querying API returned companyName=" + profile.companyName + " and sector=" + profile.sector + ".");
+            callback(null);
+            return;
+        }
 
         // Insert new stock to fp_stock table
         var sqlInsertStock = "INSERT INTO `fp_stock` (`symbol`, `name`, `sector_id`) " +
