@@ -210,7 +210,7 @@ app.post('/home', function(req, res, next) {
 
 function getPortfolioTable(req, res) {
     var inputParams;
-    var sqlStr = "SELECT s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, ot.type AS order_type, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(p1.price, 2), 2) AS current_price " +
+    var sqlStr = "SELECT o.id AS order_id, s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, ot.type AS order_type, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(p1.price, 2), 2) AS current_price " +
                  "FROM fp_user u " +
                  "INNER JOIN fp_portfolio pf ON u.id = pf.user_id " +
                  "INNER JOIN fp_order o ON pf.id = o.portfolio_id " +
@@ -472,6 +472,7 @@ app.post('/updateQuantity', function(req, res, next) {
 
     pool.query(sqlStr, sqlVar, function(err, result) {
         if (err) {
+            console.log('Error: ' + err);
             next(err);
             return;
         }
