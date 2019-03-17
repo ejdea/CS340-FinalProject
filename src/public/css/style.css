@@ -244,6 +244,7 @@ th, td {
 #main-row {
     //height: 600px;
 }
+
 /*****************************
         Whole Website
 *****************************/
@@ -258,6 +259,10 @@ th, td {
 
 .font-green {
 	color: green;
+}
+
+#popup {
+	display: none !important;
 }
 
 /* Forms */

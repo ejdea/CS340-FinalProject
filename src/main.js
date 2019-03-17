@@ -107,8 +107,7 @@ app.post('/', function(req, res, next) {
                     res.redirect('home');
                     return;
                 });
-            }
-            else {
+            } else {
                 context.login_error = "Invalid username or password";
                 res.render('login', context);
             }
@@ -158,14 +157,12 @@ app.post('/create_account', function(req, res, next) {
                 req.session.logged_in_user_id = req.body.create_password;
                 req.session.filter_sector = 0;
                 res.redirect('/home');
-                return;
             });
         });
+    } else {
+        context.alert = "Error occurred while creating account.";
+        res.render('login', context);
     }
-    else {
-        res.send("error");
-    }
-    return;
 });
 
 
@@ -182,8 +179,7 @@ app.get('/home', function(req, res, next) {
     if (!req.session.logged_in_username) {
         // if not logged in, render login page
         res.render('login');
-    }
-    else {
+    } else {
         // user is logged in	
         getPortfolioTable(req, res);
     }
@@ -208,7 +204,7 @@ app.post('/home', function(req, res, next) {
     }
 });
 
-function getPortfolioTable(req, res) {
+function getPortfolioTable(req, res, callback) {
     var inputParams;
     var sqlStr = "SELECT o.id AS order_id, s.symbol, s.name, o.quantity, p.timestamp AS purchase_date, ot.type AS order_type, FORMAT(ROUND(p.price, 2), 2) AS purchase_price, FORMAT(ROUND(p1.price, 2), 2) AS current_price " +
                  "FROM fp_user u " +
@@ -226,7 +222,7 @@ function getPortfolioTable(req, res) {
                  "AND p1.stock_id = s.id " +
                  "WHERE u.id = (?) " +
                  "AND pf.id = (?) " +
-                 "ORDER BY s.name, purchase_date, o.quantity ASC";
+                 "ORDER BY s.symbol, purchase_date, o.quantity ASC";
     inputParams = [ req.session.logged_in_user_id, req.session.portfolio_id ];
 
     pool.query(sqlStr, inputParams, function(err, pf_data) {
@@ -275,6 +271,23 @@ function queryOrderTypes(list, callback) {
         callback(list);
     });
 }
+
+function queryOrderType(req, callback) {
+    // Query order types
+    var sqlOrderTypes = "SELECT ot.type AS order_type_name " +
+                        "FROM fp_order_type ot "
+                        "WHERE ot.id = (?)";
+
+    pool.query(sqlOrderTypes, req.body["new-order-type"], function(err, ot_data) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        callback(ot_data[0].order_type_name);
+    });
+}
+
 
 function querySectors(req, list, callback) {
     var sqlSectors = "SELECT 0 AS sector_id, 'All' AS sector_name UNION " +
@@ -366,6 +379,12 @@ function getWatchlist(req, res, pf_data) {
     // Set username
     list.username = req.session.logged_in_username;
 
+    // Set popup alert
+    if (req.session.alert != null) {
+        list.alert = req.session.alert;
+        req.session.alert = null;
+    }
+
     // Query portfolio name
     queryPortfolioList(req, list, function() {
         queryOrderTypes(list, function() {
@@ -392,7 +411,7 @@ app.post('/createPortfolio', function(req, res, next) {
         req.session.portfolio_id = result.insertId;
 
         // Send insertid back to client-side
-        res.redirect('home');
+        res.render('home');
     });
 });
 
@@ -425,28 +444,30 @@ app.post('/submitOrder', function(req, res, next) {
     // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
     var regexStockSymbol = new RegExp(/^([a-zA-Z]{1,4}|\d{1,3}(?=\.)|\d{4,})$/);
     var regexInt = new RegExp(/^[0-9]*$/);
-
-    // Validate input
-    if (!regexStockSymbol.test(req.body["new-order-symbol"])) {
-        console.log("Error: Invalid stock symbol input.");
-        res.redirect('home');
-        return;
-    }
-
-    if (!regexInt.test(req.body["new-order-quantity"])) {
-        console.log("Error: Invalid quantity.");
-        res.redirect('home');
-        return;
-    }
-
     var symbol = req.body["new-order-symbol"];
     var quantity = req.body["new-order-quantity"];
+
+    // Validate input
+    if (!regexStockSymbol.test(symbol)) {
+        req.session.alert = "Error: Invalid stock symbol input.";
+        res.redirect('home');
+        return;
+    }
+
+    if (!regexInt.test(quantity)) {
+        req.session.alert = "Error: Invalid quantity.";
+        res.redirect('home');
+        return;
+    }
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
         if (isStockInDb > 0) {
             queryStockPrice(symbol, stockId, function() {
                 insertOrder(req, symbol, quantity, function() {
-                    res.redirect('home');
+                    queryOrderType(req, function(order_type_name) {
+                        req.session.alert = "Successfully filled order: " + order_type_name + " " + quantity + " shares of " + symbol + ".";
+                        res.redirect('home');
+                    });
                 });
             });
         } else {
@@ -454,7 +475,10 @@ app.post('/submitOrder', function(req, res, next) {
                 if (stockId != null) {
                     queryStockPrice(symbol, stockId, function() {
                         insertOrder(req, symbol, quantity, function() {
-                            res.redirect('home');
+                            queryOrderType(req, function(order_type_name) {
+                                req.session.alert = "Successfully filled order: " + order_type_name + " " + quantity + " shares of " + symbol + ".";
+                                res.redirect('home');
+                            });
                         });
                     });
                 } else {
@@ -544,7 +568,7 @@ function queryStockPrice(symbol, stock_id, callback) {
 
         // Validate input
         if (time_series == null || time_series.length == 0) {
-            console.log("Error: API query did not return any price data for " + symbol + '.');
+            req.session.alert = "Error: API query did not return any price data for " + symbol + '.';
             callback();
             return;
         }
@@ -607,7 +631,7 @@ function queryStockPrice(symbol, stock_id, callback) {
                 }
             });
         } else {
-            console.log('Error: stock_id was unexpectedly null when querying for querying stock prices.');
+            req.session.alert = 'Error: stock_id was unexpectedly null when querying for querying stock prices.';
             callback();
             return;
         }
@@ -627,7 +651,7 @@ function insertStock(req, symbol, callback) {
         // Validate input
         if (symbol == null || body == null || body.length == 0 || 
             (body.message != null && body.message.toLowerCase() == "server error")) {
-            console.log("Error: API could not find the stock " + symbol + ".");
+            req.session.alert = "Error: API could not find the stock " + symbol + ".";
             callback(null);
             return;
         }
@@ -640,13 +664,13 @@ function insertStock(req, symbol, callback) {
             profile.sector = result[symbol].sector;
         } catch(Err) {
             console.log(Err);
-            console.log('body = ' + JSON.stringify(body));
+            req.session.alert = 'Error: Could not find stock.';
             callback(null);
             return;
         }
 
         if (profile.companyName == null || profile.sector == null) {
-            console.log("Error: Querying API returned companyName=" + profile.companyName + " and sector=" + profile.sector + ".");
+            req.session.alert = "Error: Querying API returned companyName=" + profile.companyName + " and sector=" + profile.sector + ".";
             callback(null);
             return;
         }
@@ -704,7 +728,7 @@ app.post('/addStock', function(req, res, next) {
 
     // Validate input
     if (!regexStockSymbol.test(req.body["new-watchlist-stock"])) {
-        console.log("Error: Invalid stock symbol input.");
+        req.session.alert = "Error: Invalid stock symbol input.";
         res.redirect('home');
         return;
     }
