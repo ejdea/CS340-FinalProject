@@ -96,10 +96,10 @@
 				
 				<hr/>
 
-                {{#if pf_list}}				
+                		{{#if pf_list}}
 				<div class="row portfolio-buttons">
 					<!-- form to submit new stock order -->
-					<form id="new-order-form" name="new-order-form" action="submitOrder" method="post">
+					<form id="new-order-form" class="portfolio-form" name="new-order-form" action="submitOrder" method="post">
 						<input type="hidden" value="portfolio_id" name="" />
 						<label for="new-order-symbol">Symbol:</label>
 						<input type="text" name="new-order-symbol" id="new-order-symbol" placeholder="" maxlength="5" size="6" required>
@@ -116,7 +116,15 @@
 						<button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
 					</form>
 				</div>
-                {{/if}}
+				<hr/>
+				<div class="row portfolio-buttons">
+					<form id="new-order-type-form" class="portfolio-form" name="new-order-type-form" action="submitOrderType" method="post">
+						<label for="new-add-order-type">Add Order Type:</label>
+						<input type="text" name="new-add-order-type" id="new-add-order-type" placeholder="" maxlength="20" size="14" required>
+						<button type="submit" class="btn btn-primary btn-sm">Add Order Type</button>
+					</form>
+				</div>
+                		{{/if}}
 
 			</div>
 		

@@ -29,10 +29,20 @@
 	margin: 0;
 	padding: 0;
 	background: #485167;
+	display: flex;
+	justify-content: center;
+}
+
+.navbar-login {
+	top: 0;
+	border: none;
+	margin: 0;
+	padding: 0;
+	background: #485167;
 	position: relative;
 	display: flex;
 	justify-content: center;
-	height: 4vh;
+	height: 6vh;
 }
 
 .navbar a:hover {
@@ -232,12 +242,9 @@ th, td {
 }
 
 .home-content {
-	position: absolute;
-	display: flex;
-	height: 96vh;
 }
 
-#new-order-form {
+.portfolio-form {
 	display: inline;
 	float: right;
 }
@@ -311,4 +318,8 @@ input {
 
 form {
 	vertical-align: middle !important;
+}
+
+hr {
+	visibility: hidden;
 }

@@ -275,7 +275,7 @@ function queryOrderTypes(list, callback) {
 function queryOrderType(req, callback) {
     // Query order types
     var sqlOrderTypes = "SELECT ot.type AS order_type_name " +
-                        "FROM fp_order_type ot "
+                        "FROM fp_order_type ot " +
                         "WHERE ot.id = (?)";
 
     pool.query(sqlOrderTypes, req.body["new-order-type"], function(err, ot_data) {
@@ -439,6 +439,31 @@ function insertOrder(req, symbol, quantity, callback) {
         callback();
     });
 }
+
+app.post('/submitOrderType', function(req, res, next) {
+    var regexOrderType = new RegExp(/^[a-zA-Z0-9_\s]*$/);
+    var order_type = req.body["new-add-order-type"].trim();
+
+    // Validate input
+    if (order_type.length == 0 || order_type.length > 63) {
+        req.session.alert = "Error: Order Type input must be at least 1 character and less than 64 characters.";
+        res.redirect('home');
+        return;
+    }
+
+    if (!regexOrderType.test(order_type)) {
+        req.session.alert = "Error: Order Type input must be alphanumeric only.";
+        res.redirect('home');
+        return;
+    }
+
+    var sqlStr = "INSERT INTO `fp_order_type` (`type`) VALUES ((?))";
+
+    pool.query(sqlStr, order_type, function(err, result) {
+        req.session.alert = "Successfully added new order type '" + order_type + "'.";
+        res.redirect('home');
+    });
+});
 
 app.post('/submitOrder', function(req, res, next) {
     // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
