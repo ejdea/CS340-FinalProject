@@ -29,8 +29,10 @@
 	margin: 0;
 	padding: 0;
 	background: #485167;
+	position: relative;
 	display: flex;
 	justify-content: center;
+	height: 4vh;
 }
 
 .navbar a:hover {
@@ -230,6 +232,9 @@ th, td {
 }
 
 .home-content {
+	position: absolute;
+	display: flex;
+	height: 96vh;
 }
 
 #new-order-form {
@@ -239,10 +244,6 @@ th, td {
 
 #update-quantity {
 	width: 70px;
-}
-
-#main-row {
-    //height: 600px;
 }
 
 /*****************************
