@@ -411,7 +411,7 @@ app.post('/createPortfolio', function(req, res, next) {
         req.session.portfolio_id = result.insertId;
 
         // Send insertid back to client-side
-        res.render('home');
+        res.redirect('/home');
     });
 });
 

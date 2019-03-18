@@ -40,7 +40,7 @@
 							</select>
 						</form>
 						{{else}}
-						<p>None</p>
+						<span>None</span>
 						{{/if}}
 					</span>
 					<span class="table-header-contents">
@@ -95,7 +95,8 @@
 				</div>
 				
 				<hr/>
-				
+
+                {{#if pf_list}}				
 				<div class="row portfolio-buttons">
 					<!-- form to submit new stock order -->
 					<form id="new-order-form" name="new-order-form" action="submitOrder" method="post">
@@ -115,8 +116,11 @@
 						<button type="submit" class="btn btn-primary btn-sm">Submit Order</button>
 					</form>
 				</div>
+                {{/if}}
+
 			</div>
-			
+		
+	
 			<div class="col-lg-5 home-col" id="watchlist-col">
 				<div id="watchlist-header" class="text-left table-header">
 					<span class="table-header-title">
