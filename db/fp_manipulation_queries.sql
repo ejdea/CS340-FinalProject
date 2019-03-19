@@ -161,4 +161,7 @@ DELETE FROM `fp_user_stock` WHERE user_id = :user_id_input AND stock_id = :stock
 UPDATE `fp_user` SET `password` = :password_input WHERE username = :username_input;
 
 -- Update quantity for a selected stock in the portfolio
-UPDATE `fp_order` o SET `quantity`=:quantity WHERE o.id = :order_id
+UPDATE `fp_order` o SET `quantity`=:quantity WHERE o.id = :order_id;
+
+-- remove an order from a user's portfolio by setting portfolio id column to NULL
+UPDATE `fp_order` o SET o.portfolio_id=NULL WHERE o.id = :order_id;
