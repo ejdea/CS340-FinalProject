@@ -840,6 +840,20 @@ app.post('/deleteStock', function(req, res, next) {
     });
 });
 
+app.post('/deleteOrder', function(req, res, next) {
+    var sqlStr = "UPDATE `fp_order` o SET o.portfolio_id=NULL WHERE o.id = (?)";
+    var sqlVar = [ req.body["delete-order-id"] ];
+    
+    pool.query(sqlStr, sqlVar, function(err, results) {
+        if (err) {
+            next(err);
+            return;
+        }
+
+        res.redirect('home');
+    });
+});
+
 app.use(function(req,res){
     res.status(404);
     res.render('404');

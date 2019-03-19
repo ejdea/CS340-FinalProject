@@ -55,7 +55,7 @@ DROP TABLE IF EXISTS `fp_order`;
 CREATE TABLE `fp_order` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `stock_id` int(11) NOT NULL,
-  `portfolio_id` int(11) NOT NULL,
+  `portfolio_id` int(11),
   `order_type_id` int(11) NOT NULL,
   `price_id` int(100) NOT NULL,
   `quantity` int(11) NOT NULL,
