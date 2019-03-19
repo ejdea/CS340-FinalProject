@@ -465,6 +465,31 @@ app.post('/submitOrderType', function(req, res, next) {
     });
 });
 
+app.post('/submitSector', function(req, res, next) {
+    var regexSector = new RegExp(/^[a-zA-Z0-9_\s]*$/);
+    var sector = req.body["new-sector-type"].trim();
+
+    // Validate input
+    if (sector.length == 0 || sector.length > 99) {
+        req.session.alert = "Error: Sector input must be at least 1 character and less than 99 characters.";
+        res.redirect('home');
+        return;
+    }
+
+    if (!regexSector.test(sector)) {
+        req.session.alert = "Error: Sector input must be alphanumeric only.";
+        res.redirect('home');
+        return;
+    }
+
+    var sqlStr = "INSERT INTO `fp_sector` (`name`) VALUES ((?))";
+
+    pool.query(sqlStr, sector, function(err, result) {
+        req.session.alert = "Successfully added new sector '" + sector + "'.";
+        res.redirect('home');
+    });
+});
+
 app.post('/submitOrder', function(req, res, next) {
     // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
     var regexStockSymbol = new RegExp(/^([a-zA-Z]{1,4}|\d{1,3}(?=\.)|\d{4,})$/);

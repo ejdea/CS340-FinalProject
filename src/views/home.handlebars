@@ -218,6 +218,13 @@
 					<span>Empty Watchlist</span>
 					{{/if}}
 				</div>
+				<div class="row portfolio-buttons">
+					<form id="new-sector-form" class="portfolio-form" name="new-sector-form" action="submitSector" method="post">
+						<label for="new-sector-type">Add Sector:</label>
+						<input type="text" name="new-sector-type" id="new-sector-type" placeholder="" maxlength="20" size="14" required>
+						<button type="submit" class="btn btn-primary btn-sm">Add Sector</button>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
