@@ -154,7 +154,7 @@ app.post('/create_account', function(req, res, next) {
                 // new username and password successfully inserted.
                 // add to session, redirect user to home page
                 req.session.logged_in_username = new_username;
-                req.session.logged_in_user_id = req.body.create_password;
+                req.session.logged_in_user_id = result.insertId;;
                 req.session.filter_sector = 0;
                 res.redirect('/home');
             });
