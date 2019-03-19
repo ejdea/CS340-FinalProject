@@ -66,6 +66,7 @@
 							<th>Purchase Price</th>
 							<th>Current Price</th>
 							<th>Order Type</th>
+                            <th></th>
 							<hr/>
 						</tr>
 						{{#each pf_data}}
@@ -86,6 +87,15 @@
 							<td>{{this.purchase_price}}</td>
 							<td>{{this.current_price}}</td>
 							<td>{{this.order_type}}</td>
+                            <td>
+                                <!-- form with button to delete stock from watchlist -->
+                                <form action="deleteOrder" method="POST" id="delete-order-{{this.order_id}}" name="delete-order">
+                                    <input type="hidden" value="{{this.order_id}}" name="delete-order-id" class="watchlist-delete-btn">
+                                    <button type="submit" class="close" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </form>
+                            </td>
 						</tr>
 						{{/each}}
 					</table>
