@@ -469,7 +469,7 @@ app.post('/submitOrder', function(req, res, next) {
     // Reference: https://stackoverflow.com/questions/18647885/regular-expression-to-detect-company-tickers-using-java
     var regexStockSymbol = new RegExp(/^([a-zA-Z]{1,4}|\d{1,3}(?=\.)|\d{4,})$/);
     var regexInt = new RegExp(/^[0-9]*$/);
-    var symbol = req.body["new-order-symbol"];
+    var symbol = req.body["new-order-symbol"].toUpperCase();
     var quantity = req.body["new-order-quantity"];
 
     // Validate input
@@ -758,7 +758,7 @@ app.post('/addStock', function(req, res, next) {
         return;
     }
 
-    var symbol = req.body["new-watchlist-stock"];
+    var symbol = req.body["new-watchlist-stock"].toUpperCase();
 
     isStockInDb(symbol, function(isStockInDb, stockId) {
         if (isStockInDb > 0) {
